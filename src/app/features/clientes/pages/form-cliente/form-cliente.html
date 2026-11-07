@@ -1,0 +1,177 @@
+<div class="form-page">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <h1>{{ modoEdicion() ? 'Editar cliente' : 'Registrar cliente' }}</h1>
+      <p>
+        {{ modoEdicion()
+            ? 'Actualiza los datos del cliente.'
+            : 'Completa los datos para agregar un nuevo cliente.' }}
+      </p>
+    </div>
+    <a class="btn btn-secondary" routerLink="/clientes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m15 18-6-6 6-6"/>
+      </svg>
+      Volver al listado
+    </a>
+  </div>
+
+  @if (errorMsg()) {
+    <div class="alert-error">{{ errorMsg() }}</div>
+  }
+
+  <form class="card" [formGroup]="form" (ngSubmit)="onSubmit()">
+
+    <!-- ============ DATOS DE LA EMPRESA ============ -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 21h18"/>
+            <path d="M5 21V7l8-4v18"/>
+            <path d="M19 21V11l-6-4"/>
+            <path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/>
+          </svg>
+        </div>
+        <h2>Datos de la empresa</h2>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>Razón social <span class="req">*</span></label>
+          <input type="text" formControlName="razonSocial" placeholder="Ej. Inversiones San Jorge"
+                 [class.input-error]="isInvalid('razonSocial')" />
+          @if (isInvalid('razonSocial')) {
+            <small class="field-error">{{ errorDe('razonSocial') }}</small>
+          }
+        </div>
+
+        <div class="field">
+          <label>RUT <span class="req">*</span></label>
+          <input type="text" formControlName="rut" placeholder="Ej. 91.635.000-7"
+                 [class.input-error]="isInvalid('rut')" />
+          @if (isInvalid('rut')) {
+            <small class="field-error">{{ errorDe('rut') }}</small>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONTACTO ============ -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+        </div>
+        <h2>Contacto</h2>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>Correo electrónico <span class="req">*</span></label>
+          <input type="email" formControlName="correo" placeholder="correo@empresa.cl"
+                 [class.input-error]="isInvalid('correo')" />
+          @if (isInvalid('correo')) {
+            <small class="field-error">{{ errorDe('correo') }}</small>
+          }
+        </div>
+
+        <div class="field">
+          <label>Teléfono <span class="req">*</span></label>
+          <input type="text" formControlName="telefono" placeholder="Ej. (02) 7150 463"
+                 [class.input-error]="isInvalid('telefono')" />
+          @if (isInvalid('telefono')) {
+            <small class="field-error">{{ errorDe('telefono') }}</small>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ UBICACIÓN ============ -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+        </div>
+        <h2>Ubicación</h2>
+      </div>
+
+      <div class="grid-3">
+        <div class="field">
+          <label>Dirección <span class="req">*</span></label>
+          <input type="text" formControlName="direccion" placeholder="Calle y número"
+                 [class.input-error]="isInvalid('direccion')" />
+          @if (isInvalid('direccion')) {
+            <small class="field-error">{{ errorDe('direccion') }}</small>
+          }
+        </div>
+
+        <div class="field">
+          <label>Ciudad <span class="req">*</span></label>
+          <input type="text" formControlName="ciudad" placeholder="Ej. Santiago"
+                 [class.input-error]="isInvalid('ciudad')" />
+          @if (isInvalid('ciudad')) {
+            <small class="field-error">{{ errorDe('ciudad') }}</small>
+          }
+        </div>
+
+        <div class="field">
+          <label>Comuna <span class="req">*</span></label>
+          <input type="text" formControlName="comuna" placeholder="Ej. Providencia"
+                 [class.input-error]="isInvalid('comuna')" />
+          @if (isInvalid('comuna')) {
+            <small class="field-error">{{ errorDe('comuna') }}</small>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ESTADO (solo en edición) ============ -->
+    @if (modoEdicion()) {
+      <section class="section">
+        <div class="section-header">
+          <div class="section-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <h2>Estado del cliente</h2>
+        </div>
+
+        <div class="estado-toggle">
+          <label class="switch-label">
+            <input type="checkbox" formControlName="estado" />
+            <span class="switch-slider"></span>
+            <div class="switch-text">
+              <strong>{{ form.get('estado')?.value ? 'Cliente activo' : 'Cliente inactivo' }}</strong>
+              <small>
+                {{ form.get('estado')?.value
+                    ? 'El cliente puede recibir nuevas cotizaciones.'
+                    : 'El cliente no aparecerá disponible para cotizar.' }}
+              </small>
+            </div>
+          </label>
+        </div>
+      </section>
+    }
+
+    <!-- FOOTER -->
+    <div class="form-footer">
+      <button type="button" class="btn btn-secondary" (click)="cancelar()" [disabled]="guardando()">
+        Cancelar
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+        {{ guardando() ? 'Guardando...' : (modoEdicion() ? 'Actualizar cliente' : 'Registrar cliente') }}
+      </button>
+    </div>
+
+  </form>
+</div>

@@ -1,0 +1,210 @@
+<div class="detalle-page">
+
+  <button class="btn-volver" (click)="volver()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m15 18-6-6 6-6"/>
+    </svg>
+    Volver al listado
+  </button>
+
+  @if (cargando()) {
+    <div class="estado-carga">
+      <div class="spinner"></div>
+      <p>Cargando información de la cotización...</p>
+    </div>
+  } @else if (error()) {
+    <div class="alert-error">{{ error() }}</div>
+  } @else if (cotizacion(); as c) {
+    
+    <div class="page-header">
+      <div class="title-area">
+        <h1>{{ c.numeroCotizacion }}</h1>
+        <span class="badge" [ngClass]="estadoClass(c.estado)">{{ c.estado }}</span>
+      </div>
+      <div class="fecha-area">
+        <span>Fecha de emisión</span>
+        <strong>{{ c.fechaCotizacion | date:'dd/MM/yyyy HH:mm' }}</strong>
+      </div>
+    </div>
+
+    <div class="detalle-grid">
+      
+      <div class="columna-izquierda">
+        <!-- CARD CLIENTE -->
+        <div class="card">
+          <div class="card-header">
+            <h2>Información del Cliente</h2>
+          </div>
+          <div class="card-body info-grid">
+            <div class="info-item">
+              <span class="label">Razón Social</span>
+              <span class="value">{{ c.clienteRazonSocial }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">RUT</span>
+              <span class="value">{{ c.clienteRut }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Correo Electrónico</span>
+              <span class="value">{{ c.clienteCorreo }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Teléfono</span>
+              <span class="value">{{ c.clienteTelefono }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD ESPECIFICACIONES DEL PRODUCTO -->
+        <div class="card">
+          <div class="card-header">
+            <h2>Especificaciones del Producto</h2>
+          </div>
+          <div class="card-body info-grid">
+            <div class="info-item">
+              <span class="label">Categoría</span>
+              <span class="value">{{ c.categoria }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Cantidad</span>
+              <span class="value">{{ c.cantidad }} unidades</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Medidas (Alto × Ancho × Fondo)</span>
+              <span class="value">{{ c.altoCm }} × {{ c.anchoCm }} × {{ c.fondoCm }} cm</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Espesor</span>
+              <span class="value">{{ c.espesor }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Color</span>
+              <span class="value">{{ c.color }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Cerradura</span>
+              <span class="value">{{ c.cerradura }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Zócalo / Patas</span>
+              <span class="value">{{ c.base }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Puertas</span>
+              <span class="value">{{ c.cantidadPuertas }} puerta(s) ({{ c.tipoPuerta }})</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Bandejas</span>
+              <span class="value">{{ c.cantidadBandejas }} bandejas</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Techo</span>
+              <span class="value">{{ c.techoInclinado ? 'Con' : 'Sin' }} techo inclinado</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="columna-derecha">
+        <!-- CARD RESUMEN DE ESTIMACIÓN -->
+        <div class="card destacado-card">
+          <div class="card-header">
+            <h2>Resumen de Estimación (IA)</h2>
+            <span class="badge-ml">Modelo ML</span>
+          </div>
+          <div class="card-body">
+            <div class="fin-row">
+              <span class="label">Costo de fabricación unitario</span>
+              <span class="value">{{ c.costoFabricacion | currency:'CLP':'symbol-narrow':'1.0-0' }}</span>
+            </div>
+            <div class="fin-row">
+              <span class="label">Markup aplicado</span>
+              <span class="value">×{{ c.markupAplicado }}</span>
+            </div>
+            <div class="fin-row">
+              <span class="label">Confianza del modelo</span>
+              <span class="value">{{ (c.confianzaMl * 100) | number:'1.0-2' }}%</span>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div class="fin-row total-destacado">
+              <span class="label">Precio de venta sugerido</span>
+              <span class="value">{{ c.precioVentaSugerido | currency:'CLP':'symbol-narrow':'1.0-0' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD OBSERVACIONES / MOTIVO -->
+        @if (c.observaciones && (c.estado?.toLowerCase() === 'cancelada' || c.estado?.toLowerCase() === 'rechazada')) {
+          <div class="card alert-card">
+            <div class="card-header">
+              <h2>Motivo / Observaciones</h2>
+            </div>
+            <div class="card-body">
+              <p>{{ c.observaciones }}</p>
+            </div>
+          </div>
+        }
+
+        <!-- ACCIONES -->
+        <div class="acciones-footer">
+          @if (c.estado?.toLowerCase() === 'pendiente') {
+            <button type="button" class="btn btn-success" (click)="aceptarCotizacion()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m5 12 5 5 9-10"/>
+              </svg>
+              Aceptar Cotización
+            </button>
+            <button type="button" class="btn btn-peligro" (click)="abrirModalCancelar()">
+              Cancelar Cotización
+            </button>
+          }
+          
+          @if (c.estado?.toLowerCase() === 'aceptada') {
+            <button type="button" class="btn btn-primary" (click)="generarPDF()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Generar PDF
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- MODAL DE CANCELACIÓN -->
+@if (showCancelModal()) {
+  <div class="modal-overlay" (click)="cerrarModalCancelar()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Cancelar cotización</h2>
+        <button class="close-btn" (click)="cerrarModalCancelar()">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        <p>¿Estás seguro de que deseas cancelar la cotización <strong>{{ cotizacion()?.numeroCotizacion }}</strong>?</p>
+        
+        <div class="field">
+          <label>Motivo de la cancelación <span class="req">*</span></label>
+          <textarea 
+            [value]="cancelMotivo()" 
+            (input)="cancelMotivo.set($any($event.target).value)"
+            placeholder="Ej: El cliente decidió no comprar, precio no competitivo..."
+            rows="3"></textarea>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="cerrarModalCancelar()">Volver</button>
+        <button class="btn btn-peligro" [disabled]="!cancelMotivo().trim()" (click)="confirmarCancelacion()">
+          Confirmar Cancelación
+        </button>
+      </div>
+    </div>
+  </div>
+}

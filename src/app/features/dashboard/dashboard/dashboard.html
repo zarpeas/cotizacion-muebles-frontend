@@ -1,0 +1,168 @@
+<div class="dashboard">
+  <!-- HEADER -->
+  <div class="dash-header">
+    <div>
+      <h1>¡Hola, {{ nombreAsesor() }}! 👋</h1>
+      <p>Bienvenido al sistema inteligente de cotización de Movilockers.</p>
+    </div>
+    <a routerLink="/cotizaciones/nueva" class="btn btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      Nueva cotización
+    </a>
+  </div>
+
+  @if (cargando()) {
+    <div class="placeholder">Cargando estadísticas...</div>
+  } @else if (error()) {
+    <div class="alert-error">{{ error() }}</div>
+  } @else if (stats(); as s) {
+
+    <!-- KPIs -->
+    <div class="kpis">
+      <div class="kpi">
+        <div class="kpi-header">
+          <div class="kpi-icon clientes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+        </div>
+        <div class="kpi-value">{{ s.totalClientes | number }}</div>
+        <div class="kpi-label">Clientes</div>
+        <div class="kpi-sparkline">
+          <svg viewBox="0 0 100 20" preserveAspectRatio="none">
+            <polyline points="0,15 20,12 40,14 60,9 80,7 100,5" fill="none" stroke="#c8102e" stroke-width="2"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="kpi">
+        <div class="kpi-header">
+          <div class="kpi-icon mes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 2v4M16 2v4M3 10h18"/>
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+            </svg>
+          </div>
+        </div>
+        <div class="kpi-value">{{ s.cotizacionesMes }}</div>
+        <div class="kpi-label">Cotizaciones del mes</div>
+        <div class="kpi-sparkline">
+          <svg viewBox="0 0 100 20" preserveAspectRatio="none">
+            <polyline points="0,16 20,14 40,11 60,10 80,7 100,5" fill="none" stroke="#4a5fd5" stroke-width="2"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="kpi">
+        <div class="kpi-header">
+          <div class="kpi-icon total">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+        </div>
+        <div class="kpi-value">{{ s.totalCotizaciones | number }}</div>
+        <div class="kpi-label">Cotizaciones totales</div>
+        <div class="kpi-sparkline">
+          <svg viewBox="0 0 100 20" preserveAspectRatio="none">
+            <polyline points="0,18 20,16 40,13 60,10 80,6 100,4" fill="none" stroke="#c67700" stroke-width="2"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="kpi featured">
+        <div class="kpi-header">
+          <div class="kpi-icon ingresos">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </div>
+        </div>
+        <div class="kpi-value">{{ s.ingresosProyectados | currency:'CLP':'symbol-narrow':'1.0-0' }}</div>
+        <div class="kpi-label">Ingresos proyectados</div>
+        <div class="kpi-sparkline">
+          <svg viewBox="0 0 100 20" preserveAspectRatio="none">
+            <polyline points="0,17 20,15 40,12 60,9 80,7 100,4" fill="none" stroke="#fff" stroke-width="2"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRÁFICOS -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <h2>Evolución de cotizaciones</h2>
+            <p class="chart-subtitle">Últimos 6 meses</p>
+          </div>
+        </div>
+        <div class="chart-wrapper">
+          <canvas baseChart
+                  [data]="barChartData()"
+                  [options]="barChartOptions"
+                  type="bar"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <h2>Por familia</h2>
+            <p class="chart-subtitle">Distribución</p>
+          </div>
+        </div>
+        <div class="chart-wrapper">
+          <canvas baseChart
+                  [data]="doughnutData()"
+                  [options]="doughnutOptions"
+                  type="doughnut"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- COTIZACIONES RECIENTES -->
+    <div class="recientes-card">
+      <div class="recientes-header">
+        <div>
+          <h2>Cotizaciones recientes</h2>
+          <p class="chart-subtitle">Últimas 5 actividades</p>
+        </div>
+        <a routerLink="/cotizaciones" class="link-ver">Ver todas →</a>
+      </div>
+
+      @if (s.cotizacionesRecientes.length === 0) {
+        <div class="placeholder">No hay cotizaciones registradas.</div>
+      } @else {
+        <div class="timeline">
+          @for (c of s.cotizacionesRecientes; track c.idCotizacion) {
+            <a [routerLink]="['/cotizaciones', c.idCotizacion]" class="timeline-item">
+              <div class="timeline-dot" [ngClass]="colorEstado(c.estado)">
+                @if (c.estado?.toLowerCase() === 'aceptada') {
+                  ✓
+                } @else {
+                  ⏳
+                }
+              </div>
+              <div class="timeline-info">
+                <div class="timeline-title">{{ c.numeroCotizacion }} - {{ c.clienteNombre }}</div>
+                <div class="timeline-meta">Familia {{ c.familia }} · {{ c.fechaCotizacion | date:'dd/MM/yyyy' }}</div>
+              </div>
+              <div class="timeline-amount">
+                {{ c.total ? (c.total | currency:'CLP':'symbol-narrow':'1.0-0') : '—' }}
+              </div>
+            </a>
+          }
+        </div>
+      }
+    </div>
+
+  }
+</div>

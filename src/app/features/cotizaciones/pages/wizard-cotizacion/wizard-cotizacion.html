@@ -1,0 +1,561 @@
+<div class="wizard-page">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <h1>Nueva cotización</h1>
+      <p>Completa los pasos para generar una cotización inteligente.</p>
+    </div>
+    <button class="btn-cerrar" type="button" (click)="irAlListado()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6 6 18M6 6l12 12"/>
+      </svg>
+      Cerrar
+    </button>
+  </div>
+
+  <!-- STEP INDICATOR -->
+  <div class="steps-bar">
+    <div class="progress-track">
+      <div class="progress-fill" [style.width.%]="((paso() - 1) / 3) * 100"></div>
+    </div>
+    <div class="steps">
+      @for (s of pasos; track s.n; let i = $index) {
+        <div class="step" [class.active]="paso() === s.n" [class.done]="paso() > s.n" (click)="irA(s.n)">
+          <div class="step-circle">
+            @if (paso() > s.n) {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            } @else {
+              {{ s.n }}
+            }
+          </div>
+          <span class="step-label">{{ s.label }}</span>
+          <span class="step-sublabel">{{ s.sub }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- CARD PRINCIPAL -->
+  <div class="card">
+    @if (error()) {
+      <div class="alert-error">{{ error() }}</div>
+    }
+
+    <!-- ========== PASO 1: CLIENTE ========== -->
+    @if (paso() === 1) {
+      <h2 class="section-title">
+        <div class="section-title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+        Información del cliente
+      </h2>
+
+      <div class="field">
+        <label>Cliente <span class="req">*</span></label>
+        <div class="autocomplete">
+          <div class="autocomplete-input">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" placeholder="Buscar por razón social o RUT..." [value]="busquedaCliente()" (input)="buscarCliente($event)" (focus)="mostrarListaClientes.set(true)" autocomplete="off" />
+            @if (clienteSeleccionado()) {
+              <button type="button" class="clear-btn" (click)="limpiarCliente()">✕</button>
+            }
+          </div>
+          @if (mostrarListaClientes() && !clienteSeleccionado()) {
+            <div class="autocomplete-dropdown">
+              @if (cargandoClientes()) { <div class="dropdown-item muted">Cargando clientes...</div> }
+              @else if (clientesFiltrados().length === 0) { <div class="dropdown-item muted">Sin resultados</div> }
+              @else {
+                @for (c of clientesFiltrados(); track c.idCliente) {
+                  <div class="dropdown-item" (click)="seleccionarCliente(c)">
+                    <div class="dropdown-avatar">{{ iniciales(c.razonSocial) }}</div>
+                    <div class="dropdown-info"><div class="dropdown-name">{{ c.razonSocial }}</div><div class="dropdown-meta">{{ c.rut || '—' }}</div></div>
+                  </div>
+                }
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      @if (clienteSeleccionado(); as c) {
+        <h2 class="section-title">
+          <div class="section-title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg></div>
+          Datos del cliente
+          <span class="estado"><span class="badge-ml">Cliente activo</span></span>
+        </h2>
+        <div class="grid-3">
+          <div class="field"><label>Razón social</label><input type="text" [value]="c.razonSocial" readonly /></div>
+          <div class="field"><label>RUT</label><input type="text" [value]="c.rut || '—'" readonly /></div>
+          <div class="field"><label>Ciudad</label><input type="text" [value]="c.ciudad || '—'" readonly /></div>
+          <div class="field"><label>Correo</label><input type="text" [value]="c.correo || '—'" readonly /></div>
+          <div class="field"><label>Teléfono</label><input type="text" [value]="c.telefono || '—'" readonly /></div>
+          <div class="field"><label>Dirección</label><input type="text" [value]="c.direccion || '—'" readonly /></div>
+        </div>
+      }
+    }
+
+    <!-- ========== PASO 2: PRODUCTO ========== -->
+    @if (paso() === 2) {
+      <h2 class="section-title">
+        <div class="section-title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 16-9 5-9-5V8l9-5 9 5z"/><path d="m3 8 9 5 9-5M12 21V13"/></svg></div>
+        Datos del producto
+      </h2>
+
+      <div class="producto-layout">
+        <!-- PRODUCTO Y CANTIDAD -->
+        <section class="panel">
+          <div class="panel-head"><h3>Producto</h3></div>
+          <div class="panel-grid prod">
+            
+            <!-- Categoría -->
+            <div class="field">
+              <label>Categoría del producto</label>
+              <select [ngModel]="form().idCategoriaProducto" (ngModelChange)="setId('idCategoriaProducto', $event)">
+                <option [ngValue]="0" disabled>Seleccione una categoría</option>
+                @for (c of categorias(); track c) {
+                  <option [ngValue]="getId(c)">{{ c.nombre }}</option>
+                }
+              </select>
+            </div>
+            
+            <!-- Cantidad -->
+            <div class="field">
+              <label>Cantidad</label>
+              <div class="stepper">
+                <button type="button" (click)="decrementar('cantidad')">−</button>
+                <input type="number" [value]="form().cantidad" (input)="setNum('cantidad', $event)" min="1" />
+                <button type="button" (click)="incrementar('cantidad')">+</button>
+              </div>
+            </div>
+
+            <!-- Código de familia -->
+            <div class="field" style="grid-column: 1 / -1;">
+              <label>Código de familia</label>
+              <input 
+                type="text" 
+                placeholder="Ej: Locker 1 cuerpo 2 puertas" 
+                [value]="form().codigoFamilia" 
+                (input)="setText('codigoFamilia', $event)" 
+              />
+            </div>
+
+          </div>
+        </section>
+
+        <!-- MEDIDAS -->
+        <section class="panel">
+          <div class="panel-head"><h3>Medidas</h3></div>
+          <div class="panel-grid medidas">
+            <div class="field"><label>Alto (cm)</label><input type="number" [value]="form().alto" (input)="setNum('alto', $event)" min="1" /></div>
+            <div class="field"><label>Ancho (cm)</label><input type="number" [value]="form().ancho" (input)="setNum('ancho', $event)" min="1" /></div>
+            <div class="field"><label>Fondo (cm)</label><input type="number" [value]="form().fondo" (input)="setNum('fondo', $event)" min="1" /></div>
+            <div class="field">
+              <label>Espesor (mm)</label>
+              <select [ngModel]="form().idEspesor" (ngModelChange)="setId('idEspesor', $event)">
+                <option [ngValue]="0" disabled>Seleccione</option>
+                @for (e of espesores(); track e) {
+                  <option [ngValue]="getId(e)">{{ e.milimetros }} mm</option>
+                }
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- COLORES -->
+        <section class="panel panel-color">
+          <div class="panel-head"><h3>Color</h3></div>
+          <div class="muestras" role="radiogroup">
+            @for (col of colores; track col.nombre) {
+              <label class="muestra">
+                <input type="radio" name="color" [value]="col.nombre" [checked]="colorSeleccionado() === col.nombre" (change)="setColor(col.nombre)" />
+                <span class="cuadro" [style.background]="col.hex"></span>
+                <span class="nombre">{{ col.nombre }}</span>
+              </label>
+            }
+          </div>
+        </section>
+      </div>
+
+      <h2 class="section-title">
+        <div class="section-title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></div>
+        Características y accesorios
+      </h2>
+
+      <!-- CERRADURA (fila: ícono + texto + check a la derecha) -->
+      <div class="subseccion acc-card" style="margin-bottom: 16px;">
+        <div class="subseccion-head"><h3>Cerradura</h3><span>Elige una opción</span></div>
+        <div class="opciones tres fila" role="radiogroup">
+          @for (cerr of cerraduras(); track cerr) {
+            <label class="opcion">
+              <input type="radio" name="cerradura" [ngModel]="form().idCerradura" [value]="getId(cerr)" (ngModelChange)="setId('idCerradura', $event)" />
+
+              @if (cerr.nombre.toLowerCase().includes('guantera')) {
+                <!-- Candado con ojo de cerradura -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  <circle cx="12" cy="15.5" r="1.2"/><path d="M12 16.7V19"/>
+                </svg>
+              } @else if (cerr.nombre.toLowerCase().includes('espa')) {
+                <!-- Llave -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.8-9.8M16 7l3 3M14 9l2 2"/>
+                </svg>
+              } @else {
+                <!-- Estándar: candado simple -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              }
+
+              <span class="opcion-texto">{{ cerr.nombre }}</span>
+              <span class="opcion-check"></span>
+            </label>
+          }
+        </div>
+      </div>
+
+      <div class="acc-grid">
+        <!-- ZÓCALO O PATAS -->
+        <div class="subseccion acc-card">
+          <div class="subseccion-head"><h3>Zócalo o patas</h3><span>Elige una opción</span></div>
+          <div class="opciones dos" role="radiogroup">
+            @for (base of bases(); track base) {
+              <label class="opcion">
+                <input type="radio" name="base" [ngModel]="form().idBase" [value]="getId(base)" (ngModelChange)="setId('idBase', $event)" />
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="2.5" width="14" height="14.5" rx="1.2"/><path d="M5 9.5h14"/><rect x="6.5" y="17" width="11" height="4.5" rx=".6"/></svg>
+                <span class="opcion-texto">{{ base.nombre }}</span>
+                <span class="opcion-check"></span>
+              </label>
+            }
+          </div>
+        </div>
+
+        <!-- TECHO INCLINADO -->
+        <div class="subseccion acc-card">
+          <div class="subseccion-head"><h3>Techo inclinado</h3><span>Elige una opción</span></div>
+          <div class="opciones dos" role="radiogroup">
+            <label class="opcion">
+              <input type="radio" name="techo" value="Sin techo inclinado" [checked]="techoInclinadoSel() === 'Sin techo inclinado'" (change)="setTechoInclinado('Sin techo inclinado')" />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="6" width="16" height="14" rx="1.5"/></svg>
+              <span class="opcion-texto">Sin techo inclinado</span>
+              <span class="opcion-check"></span>
+            </label>
+            <label class="opcion">
+              <input type="radio" name="techo" value="Con techo inclinado" [checked]="techoInclinadoSel() === 'Con techo inclinado'" (change)="setTechoInclinado('Con techo inclinado')" />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V11L20 5v15z"/></svg>
+              <span class="opcion-texto">Con techo inclinado</span>
+              <span class="opcion-check"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- PUERTAS -->
+        <div class="subseccion acc-card">
+          <div class="subseccion-head"><h3>Puertas</h3><span>Cantidad y tipo</span></div>
+          <div class="field acc-num">
+            <label>Cantidad de puertas</label>
+            <div class="stepper">
+              <button type="button" (click)="decrementar('cantidadPuertas')">−</button>
+              <input type="number" [value]="form().cantidadPuertas" (input)="setNum('cantidadPuertas', $event)" min="1" max="2" />
+              <button type="button" (click)="incrementar('cantidadPuertas')">+</button>
+            </div>
+          </div>
+          <div class="acc-tipo">
+            <label class="acc-lbl">Tipo de puerta</label>
+            <div class="opciones acc-dos" role="radiogroup">
+              @for (tp of tiposPuerta(); track tp) {
+                <label class="opcion">
+                  <input type="radio" name="tipoPuerta" [ngModel]="form().idTipoPuerta" [value]="getId(tp)" (ngModelChange)="setId('idTipoPuerta', $event)" />
+
+                  @if (tp.nombre.toLowerCase().includes('sin')) {
+                    <!-- Sin puerta: marco punteado -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="5" y="3" width="14" height="18" rx="1.5" stroke-dasharray="3 2.5"/>
+                      <path d="M9 8v8" stroke-dasharray="2 2.5"/>
+                    </svg>
+                  } @else if (tp.nombre.toLowerCase().includes('malla')) {
+                    <!-- Puerta con malla -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="5" y="3" width="14" height="18" rx="1.5"/>
+                      <path d="M9 7h6M9 11h6M9 15h6M9 7v8M12 7v8M15 7v8"/>
+                    </svg>
+                  } @else if (tp.nombre.toLowerCase().includes('cnc')) {
+                    <!-- Puerta CNC láser (perforado) -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="5" y="3" width="14" height="18" rx="1.5"/>
+                      <g fill="currentColor" stroke="none">
+                        <circle cx="9" cy="8" r="1"/><circle cx="12" cy="8" r="1"/><circle cx="15" cy="8" r="1"/>
+                        <circle cx="9" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
+                        <circle cx="9" cy="16" r="1"/><circle cx="12" cy="16" r="1"/><circle cx="15" cy="16" r="1"/>
+                      </g>
+                    </svg>
+                  } @else {
+                    <!-- Puerta lisa con manija -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="5" y="3" width="14" height="18" rx="1.5"/>
+                      <circle cx="15" cy="12" r="1" fill="currentColor"/>
+                    </svg>
+                  }
+
+                  <span class="opcion-texto">{{ tp.nombre }}</span>
+                  <span class="opcion-check"></span>
+                </label>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- BANDEJAS -->
+        <div class="subseccion acc-card">
+          <div class="subseccion-head"><h3>Bandejas</h3><span>Cantidad de bandejas interiores</span></div>
+          <div class="field acc-bandejas">
+            <label>Número de bandejas</label>
+            <div class="stepper">
+              <button type="button" (click)="decrementar('cantidadBandejas')">−</button>
+              <input type="number" [value]="form().cantidadBandejas" (input)="setNum('cantidadBandejas', $event)" min="0" max="12" />
+              <button type="button" (click)="incrementar('cantidadBandejas')">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ========== PASO 3: REGLAS COMERCIALES ========== -->
+    @if (paso() === 3) {
+      <h2 class="section-title">
+        <div class="section-title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 20v-6M12 20V8M18 20V4"/></svg></div>
+        Reglas comerciales
+        <button type="button" class="link-editar reg-editar" style="margin-left: auto;" (click)="irA(2)">Editar producto</button>
+      </h2>
+
+      @if (prediccion()) {
+        
+        <!-- FLUJO PASO 3: ML(Rojo) y Reglas(Gris) -->
+        <div class="flujo">
+          <div class="flujo-caja ml">
+            <span class="flujo-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/></svg></span>
+            <div><strong>ML</strong><span class="flujo-sub">→ costo estimado</span><p>El modelo de ML estima el costo de fabricación en base a las características del producto.</p></div>
+          </div>
+          <svg class="flujo-flecha" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9h10V5l8 7-8 7v-4H3z"/></svg>
+          <div class="flujo-caja reglas">
+            <span class="flujo-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span>
+            <div><strong>Reglas comerciales</strong><span class="flujo-sub">→ precio sugerido</span><p>Se aplican reglas comerciales (margen, descuentos, etc.) para obtener el precio de venta sugerido.</p></div>
+          </div>
+        </div>
+
+        <div class="estimacion">
+          <!-- 1. Costo ML (DESTACADO EN ROJO) -->
+          <div class="est-fila destacada">
+            <span class="est-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/></svg></span>
+            <span class="est-label">Costo de fabricación estimado (ML)<small>(por unidad)</small></span>
+            <strong class="est-valor">{{ costoUnitario() | currency:'CLP':'symbol-narrow':'1.0-0' }}</strong>
+            <button type="button" class="est-info">i</button>
+          </div>
+          
+          <!-- 2. Markup (Normal) -->
+          <div class="est-fila">
+            <span class="est-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 20v-6M12 20V8M18 20V4"/></svg></span>
+            <span class="est-label">Markup aplicado<small>{{ etiquetaMarkup() }}</small></span>
+            <strong class="est-valor">{{ markupActual() }}</strong>
+            <button type="button" class="est-info">i</button>
+          </div>
+
+          <!-- 3. Precio Venta (NORMAL/GRIS) -->
+          <div class="est-fila">
+            <span class="est-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/></svg></span>
+            <span class="est-label">Precio de venta sugerido<small>(por unidad)</small></span>
+            <strong class="est-valor">{{ precioUnitario() | currency:'CLP':'symbol-narrow':'1.0-0' }}</strong>
+            <button type="button" class="est-info">i</button>
+          </div>
+        </div>
+
+       <div class="subseccion reg-tabla-box">
+          <div class="subseccion-head">
+            <h3>Markup según cantidad</h3>
+            <span>Regla que se aplica</span>
+          </div>
+          <table class="reg-tabla">
+            <thead>
+              <tr>
+                <th>Cantidad de unidades</th>
+                <th>Markup</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="act">
+                <td>
+                  {{ cantidad() }} {{ cantidad() === 1 ? 'unidad' : 'unidades' }}
+                  <small>{{ etiquetaMarkup() }}</small>
+                </td>
+                <td>{{ markupActual() }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="est-nota">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <p>El markup se aplica sobre el costo de fabricación estimado. Las condiciones comerciales adicionales se muestran en el resumen final de la cotización.</p>
+        </div>
+      } @else {
+        <div class="placeholder" style="color: #c33;">
+          No se pudo calcular el costo. Revisa que los catálogos estén cargados y vuelve a intentarlo.
+        </div>
+      }
+    }
+
+    <!-- ========== PASO 4: RESUMEN ========== -->
+    @if (paso() === 4) {
+      
+      <h2 class="section-title">
+        <div class="section-title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+        Resumen de la cotización
+      </h2>
+
+      <div class="resumen-grid">
+        @if (clienteSeleccionado(); as c) {
+          <div class="resumen-bloque">
+            <div class="resumen-bloque-header">
+              <div class="resumen-bloque-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+              <span class="resumen-bloque-title">Cliente</span>
+              <button type="button" class="link-editar" (click)="irA(1)">Editar</button>
+            </div>
+            <div class="resumen-linea"><span>Razón social</span><strong>{{ c.razonSocial }}</strong></div>
+            <div class="resumen-linea"><span>RUT</span><strong>{{ c.rut || '—' }}</strong></div>
+            <div class="resumen-linea"><span>Correo</span><strong>{{ c.correo || '—' }}</strong></div>
+            <div class="resumen-linea"><span>Teléfono</span><strong>{{ c.telefono || '—' }}</strong></div>
+            <div class="resumen-linea"><span>Dirección</span><strong>{{ c.direccion || '—' }}</strong></div>
+          </div>
+        }
+
+        <div class="resumen-bloque">
+          <div class="resumen-bloque-header">
+            <div class="resumen-bloque-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 16-9 5-9-5V8l9-5 9 5z"/></svg></div>
+            <span class="resumen-bloque-title">Producto</span>
+            <button type="button" class="link-editar" (click)="irA(2)">Editar</button>
+          </div>
+          <div class="resumen-linea"><span>Categoría</span><strong>{{ categoriaSeleccionada() }}</strong></div>
+          <div class="resumen-linea"><span>Código de familia</span><strong>{{ form().codigoFamilia || '—' }}</strong></div>
+          <div class="resumen-linea"><span>Cantidad</span><strong>{{ cantidad() }}</strong></div>
+          <div class="resumen-linea"><span>Medidas (alto × ancho × fondo)</span><strong>{{ altoCm() }} × {{ anchoCm() }} × {{ fondoCm() }} cm</strong></div>
+          <div class="resumen-linea"><span>Espesor</span><strong>{{ espesorSeleccionado() }}</strong></div>
+          <div class="resumen-linea"><span>Color</span><strong><span class="mini-dot" [style.background]="colorActualHex()"></span>{{ colorSeleccionado() }}</strong></div>
+          <div class="resumen-linea"><span>Cerradura</span><strong>{{ tipoCerradura() }}</strong></div>
+          <div class="resumen-linea"><span>Zócalo / patas</span><strong>{{ zocaloOPatas() }}</strong></div>
+          <div class="resumen-linea"><span>Cantidad de puertas</span><strong>{{ form().cantidadPuertas }} puerta(s)</strong></div>
+          <div class="resumen-linea"><span>Tipo de puerta</span><strong>{{ tipoPuerta() }}</strong></div>
+          <div class="resumen-linea"><span>Bandejas</span><strong>{{ form().cantidadBandejas }}</strong></div>
+          <div class="resumen-linea"><span>Techo inclinado</span><strong>{{ techoInclinadoSel() }}</strong></div>
+        </div>
+      </div>
+
+      <h2 class="section-title">
+        <div class="section-title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/></svg></div>
+        Resumen de estimación
+        <span class="estado"><span class="badge-ml">Modelo ML activo</span></span>
+      </h2>
+
+      <!-- FLUJO PASO 4: ML(Gris) y Reglas(Rojo) -->
+      <div class="flujo">
+        <div class="flujo-caja ml-gris">
+          <span class="flujo-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/></svg></span>
+          <div><strong>ML</strong><span class="flujo-sub">→ costo estimado</span><p>El modelo de ML estima el costo de fabricación en base a las características del producto.</p></div>
+        </div>
+        <svg class="flujo-flecha" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9h10V5l8 7-8 7v-4H3z"/></svg>
+        <div class="flujo-caja reglas-rojo">
+          <span class="flujo-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span>
+          <div><strong>Reglas comerciales</strong><span class="flujo-sub">→ precio sugerido</span><p>Se aplican reglas comerciales (margen, descuentos, etc.) para obtener el precio de venta sugerido.</p></div>
+        </div>
+      </div>
+
+      @if (prediccion()) {
+        <div class="estimacion">
+          <div class="est-fila">
+            <span class="est-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg></span>
+            <span class="est-label">Costo de fabricación estimado (ML)<small>(por unidad)</small></span>
+            <strong class="est-valor">{{ costoUnitario() | currency:'CLP':'symbol-narrow':'1.0-0' }}</strong>
+            <button type="button" class="est-info">i</button>
+          </div>
+
+          <div class="est-fila">
+            <span class="est-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 20v-6M12 20V8M18 20V4"/></svg></span>
+            <span class="est-label">Markup aplicado<small>{{ etiquetaMarkup() }}</small></span>
+            <strong class="est-valor">×{{ markupActual() }}</strong>
+            <button type="button" class="est-info">i</button>
+          </div>
+
+          <div class="est-fila destacada">
+            <span class="est-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1"/></svg></span>
+            <span class="est-label">Precio de venta sugerido<small>(por unidad)</small></span>
+            <strong class="est-valor">{{ precioUnitario() | currency:'CLP':'symbol-narrow':'1.0-0' }}</strong>
+            <button type="button" class="est-info">i</button>
+          </div>
+
+          <div class="est-fila">
+            <span class="est-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 5 5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg></span>
+            <span class="est-label">Descuento sugerido<small>(solo para más de 10 unidades)</small></span>
+            <strong class="est-valor">
+              @if (aplicaDescuento()) { 
+                Sí aplica (3% a 5%) 
+              } @else { 
+                No aplica 
+              }
+            </strong>
+            <button type="button" class="est-info">i</button>
+          </div>
+
+          <div class="est-fila">
+            <span class="est-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span>
+            <span class="est-label">Nivel de confianza del modelo</span>
+            <span class="est-valor con-barra">
+              <strong>{{ (prediccion()?.confianzaR2 ?? 0) * 100 | number:'1.0-0' }}%</strong>
+              <span class="barra">
+                <i [style.width.%]="(prediccion()?.confianzaR2 ?? 0) * 100"></i>
+              </span>
+            </span>
+            <button type="button" class="est-info">i</button>
+          </div>
+        </div>
+
+        <div class="est-nota">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <p>El precio de venta sugerido se genera después de aplicar las reglas comerciales de la empresa sobre el costo de fabricación estimado por el modelo de Machine Learning.</p>
+        </div>
+      }
+    }
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="wizard-footer">
+    @if (paso() > 1 && !confirmada()) {
+      <button type="button" class="btn btn-secondary" (click)="anterior()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Anterior
+      </button>
+    } @else {
+      <span></span>
+    }
+
+    @if (paso() < 4) {
+      <button type="button" class="btn btn-primary" (click)="siguiente()">
+        Siguiente
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+    } @else if (confirmada()) {
+      <div class="acciones-finales">
+        <button type="button" class="btn btn-secondary" (click)="nueva()">Nueva</button>
+        <button type="button" class="btn btn-primary" (click)="irAlListado()">Ver listado</button>
+      </div>
+    } @else {
+      <div class="acciones-finales">
+        <button type="button" class="btn btn-secondary" [disabled]="cargando()" (click)="predecir()">
+          {{ cargando() ? 'Calculando...' : 'Recalcular' }}
+        </button>
+        <button type="button" class="btn btn-success" [disabled]="cargando()" (click)="confirmar()">
+          Confirmar y guardar
+        </button>
+      </div>
+    }
+  </div>
+
+</div>

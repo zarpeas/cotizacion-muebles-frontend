@@ -1,0 +1,185 @@
+<!-- src/app/features/clientes/pages/lista-clientes/lista-clientes.html -->
+
+<div class="clientes-page">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <h1>Clientes</h1>
+      <p>Administra la cartera de clientes de Movilockers.</p>
+    </div>
+    <a class="btn btn-primary" routerLink="/clientes/nuevo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      Nuevo cliente
+    </a>
+  </div>
+
+  @if (errorMsg()) {
+    <div class="alert-error">{{ errorMsg() }}</div>
+  }
+
+  <!-- KPIs -->
+  <div class="kpis">
+    <div class="kpi">
+      <div class="kpi-icon kpi-icon-total">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-value">{{ totalClientes() | number }}</div>
+        <div class="kpi-label">Total de clientes</div>
+      </div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-icon kpi-icon-activos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-value">{{ totalActivos() | number }}</div>
+        <div class="kpi-label">Activos</div>
+      </div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-icon kpi-icon-inactivos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 8v4M12 16h.01"/>
+        </svg>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-value">{{ totalInactivos() | number }}</div>
+        <div class="kpi-label">Inactivos</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD CON FILTROS Y TABLA -->
+  <div class="card">
+
+    <!-- FILTROS -->
+    <div class="filtros">
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input
+          type="text"
+          placeholder="Buscar por razón social, RUT, ciudad o correo..."
+          (input)="onFiltro($event)" />
+      </div>
+
+      <select class="estado-select" (change)="onEstadoChange($event)">
+        <option value="todos">Todos los estados</option>
+        <option value="activos">Solo activos</option>
+        <option value="inactivos">Solo inactivos</option>
+      </select>
+    </div>
+
+    <!-- TABLA -->
+    @if (cargando()) {
+      <div class="placeholder">Cargando clientes...</div>
+    } @else if (filtrados().length === 0) {
+      <div class="placeholder">No se encontraron clientes.</div>
+    } @else {
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>RUT</th>
+            <th>Ciudad</th>
+            <th>Correo</th>
+            <th>Teléfono</th>
+            <th>Estado</th>
+            <th class="acciones-th">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of clientesPaginados(); track c.idCliente) {
+            <tr>
+              <td>
+                <div class="cliente-cell">
+                  <div class="cliente-avatar">{{ iniciales(c.razonSocial) }}</div>
+                  <div class="cliente-info">
+                    <span class="cliente-nombre">{{ c.razonSocial }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>{{ c.rut || '—' }}</td>
+              <td>{{ c.ciudad || '—' }}</td>
+              <td class="correo-cell">{{ c.correo || '—' }}</td>
+              <td>{{ c.telefono || '—' }}</td>
+              <td>
+                @if (c.estado) {
+                  <span class="badge badge-activo">Activo</span>
+                } @else {
+                  <span class="badge badge-inactivo">Inactivo</span>
+                }
+              </td>
+              <td class="acciones-td">
+                <a class="action-btn" [routerLink]="['/clientes/editar', c.idCliente]" title="Editar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                  </svg>
+                </a>
+                <button class="action-btn danger" (click)="eliminar(c)" title="Eliminar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18"/>
+                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- PAGINACIÓN -->
+      <div class="table-foot">
+        <div class="showing">
+          Mostrando <strong>{{ rangoMostrado().inicio }}</strong> – <strong>{{ rangoMostrado().fin }}</strong>
+          de <strong>{{ rangoMostrado().total }}</strong> clientes
+        </div>
+
+        @if (totalPaginas() > 1) {
+          <div class="pagination">
+            <button class="page-btn" [disabled]="paginaActual() === 1" (click)="anterior()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6"/>
+              </svg>
+            </button>
+
+            @for (p of paginas(); track $index) {
+              @if (p === '...') {
+                <span class="page-ellipsis">...</span>
+              } @else {
+                <button class="page-btn" [class.active]="p === paginaActual()" (click)="irA(p)">
+                  {{ p }}
+                </button>
+              }
+            }
+
+            <button class="page-btn" [disabled]="paginaActual() === totalPaginas()" (click)="siguiente()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m9 18 6-6-6-6"/>
+              </svg>
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+</div>

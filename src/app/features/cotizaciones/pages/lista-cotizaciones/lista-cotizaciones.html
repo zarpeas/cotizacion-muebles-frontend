@@ -1,0 +1,246 @@
+<div class="cotizaciones-page">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <h1>Cotizaciones</h1>
+      <p>Consulta y administra las cotizaciones generadas.</p>
+    </div>
+    <a class="btn btn-primary" routerLink="/cotizaciones/nueva">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      Nueva cotización
+    </a>
+  </div>
+
+  @if (error()) {
+    <div class="alert-error">{{ error() }}</div>
+  }
+
+  <!-- KPIs -->
+  <div class="kpis">
+    <div class="kpi">
+      <div class="kpi-icon kpi-icon-total">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-value">{{ totalCotizaciones() }}</div>
+        <div class="kpi-label">Total de cotizaciones</div>
+      </div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-icon kpi-icon-aprobadas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-value">{{ totalAprobadas() }}</div>
+        <div class="kpi-label">Aprobadas</div>
+      </div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-icon kpi-icon-pendientes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-value">{{ totalPendientes() }}</div>
+        <div class="kpi-label">Pendientes</div>
+      </div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-icon kpi-icon-canceladas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="15" y1="9" x2="9" y2="15"/>
+          <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-value">{{ totalCanceladas() }}</div>
+        <div class="kpi-label">Canceladas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD CON FILTROS Y TABLA -->
+  <div class="card">
+
+    <!-- FILTROS -->
+    <div class="filtros">
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input
+          type="text"
+          placeholder="Buscar por N° de cotización, cliente o familia..."
+          (input)="onFiltro($event)" />
+      </div>
+
+      <select class="filter-select" (change)="onEstadoChange($event)">
+        <option value="todos">Todos los estados</option>
+        <option value="pendiente">Pendientes</option>
+        <option value="aceptada">Aprobadas</option>
+        <option value="cancelada">Canceladas</option>
+      </select>
+
+      <select class="filter-select" (change)="onFamiliaChange($event)">
+        <option value="todas">Todas las familias</option>
+        @for (f of familias(); track f) {
+          <option [value]="f">{{ f }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- TABLA -->
+    @if (cargando()) {
+      <div class="placeholder">Cargando cotizaciones...</div>
+    } @else if (filtrados().length === 0) {
+      <div class="placeholder">No se encontraron cotizaciones.</div>
+    } @else {
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>N° cotización</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Producto / Familia</th>
+            <th class="num">Monto</th>
+            <th>Estado</th>
+            <th>Motivo (si aplica)</th> 
+            <th class="acciones-th">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of cotizacionesPaginadas(); track c.idCotizacion) {
+            <tr>
+              <td>
+                <a class="link-cot" [routerLink]="['/cotizaciones', c.idCotizacion]">
+                  {{ c.numeroCotizacion }}
+                </a>
+              </td>
+              <td class="fecha-cell">{{ c.fechaCotizacion | date:'dd/MM/yyyy' }}</td>
+              <td>
+                <div class="cliente-cell">
+                  <div class="cliente-avatar">{{ iniciales(c.clienteNombre) }}</div>
+                  <span class="cliente-nombre">{{ c.clienteNombre || '—' }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="familia-tag">{{ c.productoFamilia }}</span>
+              </td>
+              <td class="num negrita">
+                {{ c.montoTotal ? (c.montoTotal | currency:'CLP':'symbol-narrow':'1.0-0') : '—' }}
+              </td>
+              <td>
+                <span class="badge" [ngClass]="estadoClass(c.estado)">
+                  {{ c.estado }}
+                </span>
+              </td>
+              <!-- NUEVA COLUMNA MOTIVO -->
+              <td class="text-gray-500 text-xs" style="color: #888; font-size: 13px;">
+                {{ c.motivo || '—' }}
+              </td>
+              <td class="acciones-td">
+                <a class="action-btn" [routerLink]="['/cotizaciones', c.idCotizacion]" title="Ver detalle">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </a>
+                @if (c.estado?.toLowerCase() !== 'cancelada') {
+                  <button class="action-btn danger" (click)="abrirModalCancelar(c, $event)" title="Cancelar cotización">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="15" y1="9" x2="9" y2="15"/>
+                      <line x1="9" y1="9" x2="15" y2="15"/>
+                    </svg>
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- PAGINACIÓN -->
+      <div class="table-foot">
+        <div class="showing">
+          Mostrando <strong>{{ rangoMostrado().inicio }}</strong> – <strong>{{ rangoMostrado().fin }}</strong>
+          de <strong>{{ rangoMostrado().total }}</strong> cotizaciones
+        </div>
+
+        @if (totalPaginas() > 1) {
+          <div class="pagination">
+            <button class="page-btn" [disabled]="paginaActual() === 1" (click)="anterior()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6"/>
+              </svg>
+            </button>
+
+            @for (p of paginas(); track $index) {
+              @if (p === '...') {
+                <span class="page-ellipsis">...</span>
+              } @else {
+                <button class="page-btn" [class.active]="p === paginaActual()" (click)="irA(p)">
+                  {{ p }}
+                </button>
+              }
+            }
+
+            <button class="page-btn" [disabled]="paginaActual() === totalPaginas()" (click)="siguiente()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m9 18 6-6-6-6"/>
+              </svg>
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+  <!-- MODAL DE CANCELACIÓN -->
+    @if (showCancelModal()) {
+      <div class="modal-overlay" (click)="cerrarModalCancelar()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Cancelar cotización</h2>
+            <button class="close-btn" (click)="cerrarModalCancelar()">✕</button>
+          </div>
+          
+          <div class="modal-body">
+            <p>¿Estás seguro de que deseas cancelar la cotización <strong>{{ cotizacionACancelar()?.numeroCotizacion }}</strong>?</p>
+            
+            <div class="field">
+              <label>Motivo de la cancelación <span class="req">*</span></label>
+              <textarea 
+                [value]="cancelMotivo()" 
+                (input)="cancelMotivo.set($any($event.target).value)"
+                placeholder="Ej: El cliente decidió no comprar, precio no competitivo, error en las medidas..."
+                rows="3"></textarea>
+            </div>
+          </div>
+          
+          <div class="modal-footer">
+            <button class="btn btn-secondary" (click)="cerrarModalCancelar()">Volver</button>
+            <button class="btn btn-peligro" [disabled]="!cancelMotivo().trim()" (click)="confirmarCancelacion()">
+              Confirmar Cancelación
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+</div>

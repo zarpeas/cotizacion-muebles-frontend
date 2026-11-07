@@ -1,0 +1,43 @@
+<div class="pagination">
+  <div class="info">
+    Mostrando
+    <strong>{{ (currentPage() - 1) * pageSize + 1 }}</strong>
+    –
+    <strong>{{ Math.min(currentPage() * pageSize, totalItems) }}</strong>
+    de
+    <strong>{{ totalItems }}</strong>
+    registros
+  </div>
+
+  <div class="controles">
+    <button
+      type="button"
+      class="btn-nav"
+      [disabled]="currentPage() === 1"
+      (click)="anterior()">
+      ‹
+    </button>
+
+    @for (p of paginas(); track $index) {
+      @if (p === '...') {
+        <span class="ellipsis">...</span>
+      } @else {
+        <button
+          type="button"
+          class="btn-pagina"
+          [class.activa]="p === currentPage()"
+          (click)="irA(p)">
+          {{ p }}
+        </button>
+      }
+    }
+
+    <button
+      type="button"
+      class="btn-nav"
+      [disabled]="currentPage() === _totalPages()"
+      (click)="siguiente()">
+      ›
+    </button>
+  </div>
+</div>
