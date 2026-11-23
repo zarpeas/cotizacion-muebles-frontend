@@ -251,16 +251,8 @@
         <!-- PUERTAS -->
         <div class="subseccion acc-card">
           <div class="subseccion-head"><h3>Puertas</h3><span>Cantidad y tipo</span></div>
-          <div class="field acc-num">
-            <label>Cantidad de puertas</label>
-            <div class="stepper">
-              <button type="button" (click)="decrementar('cantidadPuertas')">−</button>
-              <input type="number" [value]="form().cantidadPuertas" (input)="setNum('cantidadPuertas', $event)" min="1" max="2" />
-              <button type="button" (click)="incrementar('cantidadPuertas')">+</button>
-            </div>
-          </div>
-          <div class="acc-tipo">
-            <label class="acc-lbl">Tipo de puerta</label>
+          <div  class="field" style="margin-bottom: 24px;">
+            <label>Tipo de puerta</label>
             <div class="opciones acc-dos" role="radiogroup">
               @for (tp of tiposPuerta(); track tp) {
                 <label class="opcion">
@@ -302,6 +294,25 @@
               }
             </div>
           </div>
+          @if (!isSinPuerta()) {
+            <div class="field acc-num" style="margin-bottom: 0;">
+              <label>Cantidad de puertas</label>
+              <div class="stepper">
+                <button type="button" (click)="decrementar('cantidadPuertas')" [disabled]="cantidadPuertasActual() <= 1">−</button>
+                <input type="number" [value]="cantidadPuertasActual()" (input)="setNum('cantidadPuertas', $event)" min="1" />
+                <button type="button" (click)="incrementar('cantidadPuertas')">+</button>
+              </div>
+            </div>
+          } @else {
+            <div class="field acc-num" style="margin-bottom: 0;">
+              <label>Cantidad de casilleros</label>
+              <div class="stepper">
+                <button type="button" (click)="decrementar('cantidadCasilleros')" [disabled]="cantidadCasillerosActual() <= 1">−</button>
+                <input type="number" [value]="cantidadCasillerosActual()" (input)="setNum('cantidadCasilleros', $event)" min="1" />
+                <button type="button" (click)="incrementar('cantidadCasilleros')">+</button>
+              </div>
+            </div>
+          }
         </div>
 
         <!-- BANDEJAS -->
@@ -472,7 +483,7 @@
           <div class="est-fila">
             <span class="est-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg></span>
             <span class="est-label">Costo de fabricación estimado (ML)<small>(por unidad)</small></span>
-            <strong class="est-valor">{{ costoUnitario() | currency:'CLP':'symbol-narrow':'1.0-0' }}</strong>
+            <strong class="est-valor">{{ costoUnitario() | currency:'CLP':'symbol-narrow':'1.0-0':'es-CL' }}</strong>
             <button type="button" class="est-info">i</button>
           </div>
 
@@ -486,7 +497,7 @@
           <div class="est-fila destacada">
             <span class="est-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1"/></svg></span>
             <span class="est-label">Precio de venta sugerido<small>(por unidad)</small></span>
-            <strong class="est-valor">{{ precioUnitario() | currency:'CLP':'symbol-narrow':'1.0-0' }}</strong>
+            <strong class="est-valor">{{ precioUnitario() | currency:'CLP':'symbol-narrow':'1.0-0':'es-CL' }}</strong>
             <button type="button" class="est-info">i</button>
           </div>
 
@@ -505,13 +516,10 @@
 
           <div class="est-fila">
             <span class="est-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span>
-            <span class="est-label">Nivel de confianza del modelo</span>
-            <span class="est-valor con-barra">
-              <strong>{{ (prediccion()?.confianzaR2 ?? 0) * 100 | number:'1.0-0' }}%</strong>
-              <span class="barra">
-                <i [style.width.%]="(prediccion()?.confianzaR2 ?? 0) * 100"></i>
-              </span>
-            </span>
+            <span class="est-label">Error promedio del modelo (MAPE)</span>
+            <strong class="est-valor" style="text-align: right;">
+              {{ (prediccion()?.mapeEsperadoPct ?? 0) | number:'1.2-2' }}%
+            </strong>
             <button type="button" class="est-info">i</button>
           </div>
         </div>

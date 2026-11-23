@@ -6,7 +6,7 @@ import { DashboardStats } from '../models/dashboard.model';
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8080/api/dashboard';
+  private readonly apiUrl = '/api/dashboard';
 
   stats(): Observable<DashboardStats> {
     return this.http.get<DashboardStats>(`${this.apiUrl}/stats`);

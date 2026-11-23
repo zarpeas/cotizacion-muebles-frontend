@@ -1,1 +1,276 @@
-<p>reportes works!</p>
+<div class="reporte-page">
+  <!-- HEADER CON FILTROS -->
+  <div class="page-header">
+    <div>
+      <h1>Reportería comercial</h1>
+      <p>Análisis de cotizaciones, resultados y personalizaciones</p>
+    </div>
+    <div class="filtros">
+      <select class="filter-select" [(ngModel)]="periodoSeleccionado" (change)="aplicarFiltros()">
+        <option>Últimos 3 meses</option>
+        <option>Últimos 6 meses</option>
+        <option>Este año</option>
+      </select>
+      <select class="filter-select" [(ngModel)]="estadoSeleccionado" (change)="aplicarFiltros()">
+        <option>Todos los estados</option>
+        <option>Aprobado</option>
+        <option>Pendiente</option>
+        <option>Rechazada</option>
+      </select>
+      <select class="filter-select" [(ngModel)]="familiaSeleccionada" (change)="aplicarFiltros()">
+        <option>Todas las familias</option>
+        <option>Lockers</option>
+        <option>Storage</option>
+        <option>Ropero</option>
+        <option>Lockers Oficina</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- KPIS -->
+  <div class="kpis">
+    <!-- Total -->
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <div class="kpi-icon rojo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M8 13h8M8 17h8"></path></svg>
+        </div>
+        <span class="kpi-title">Total de cotizaciones</span>
+      </div>
+      <div class="kpi-body">
+        <strong class="kpi-value">{{ stats()?.totalCotizaciones | number }}</strong>
+      </div>
+      <div class="kpi-sparkline">
+        <svg viewBox="0 0 100 20" preserveAspectRatio="none">
+          <polyline
+            points="0,15 20,12 40,14 60,9 80,7 100,5"
+            fill="none"
+            stroke="#c8102e"
+            stroke-width="2"
+          />
+        </svg>
+      </div>
+    </div>
+
+    <!-- Ganadas -->
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <div class="kpi-icon verde">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0z"></path></svg>
+        </div>
+        <span class="kpi-title">Cotizaciones ganadas</span>
+      </div>
+      <div class="kpi-body">
+        <strong class="kpi-value">{{ stats()?.totalAprobadas | number }}</strong>
+      </div>
+      <div class="kpi-sparkline">
+        <svg viewBox="0 0 100 20" preserveAspectRatio="none">
+          <polyline
+            points="0,16 20,14 40,11 60,10 80,7 100,5"
+            fill="none"
+            stroke="#1a7f4f"
+            stroke-width="2"
+          />
+        </svg>
+      </div>
+    </div>
+
+    <!-- Rechazadas -->
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <div class="kpi-icon rojo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <path d="m15 9-6 6M9 9l6 6" />
+          </svg>
+        </div>
+        <span class="kpi-title">Cotizaciones rechazadas</span>
+      </div>
+      <div class="kpi-body">
+        <strong class="kpi-value">{{ stats()?.totalRechazadas | number }}</strong>
+      </div>
+      <div class="kpi-sparkline">
+        <svg viewBox="0 0 100 20" preserveAspectRatio="none">
+          <polyline
+            points="0,18 20,16 40,13 60,10 80,6 100,4"
+            fill="none"
+            stroke="#c8102e"
+            stroke-width="2"
+          />
+        </svg>
+      </div>
+    </div>
+
+    <!-- Tasa Conversión -->
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <div class="kpi-icon naranja">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="8" cy="8" r="6" />
+            <path d="M18.09 10.37A6 6 0 1 1 10.34 18M7 6h1v4" />
+          </svg>
+        </div>
+        <span class="kpi-title">Tasa de conversión</span>
+      </div>
+      <div class="kpi-body">
+        <strong class="kpi-value">{{ stats()?.tasaConversion | number: '1.1-1' }}%</strong>
+      </div>
+      <div class="kpi-mini-donut">
+        <svg viewBox="0 0 36 36">
+          <path
+            class="circle-bg"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+          />
+          <path
+            class="circle"
+            [attr.stroke-dasharray]="(stats()?.tasaConversion || 0) + ', 100'"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+          />
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRÁFICOS -->
+  <div class="charts-row">
+    <!-- Barras -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h2>Cotizaciones ganadas vs. rechazadas por mes</h2>
+        <div class="custom-legend">
+          <span><i class="dot rojo"></i> Ganadas</span>
+          <span><i class="dot rosa"></i> Rechazadas</span>
+        </div>
+      </div>
+      <div class="chart-wrapper">
+        <canvas baseChart [data]="barChartData()" [options]="barChartOptions" type="bar"></canvas>
+      </div>
+    </div>
+
+    <!-- Dona -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h2>Motivos de rechazo de cotizaciones</h2>
+      </div>
+      <div class="donut-layout">
+        <div class="donut-wrapper">
+          <canvas
+            baseChart
+            [data]="doughnutChartData()"
+            [options]="doughnutChartOptions"
+            type="doughnut"
+          ></canvas>
+          <div class="donut-center">
+            <strong>{{ stats()?.totalRechazadas }}</strong>
+            <span>cotizaciones<br />rechazadas</span>
+          </div>
+        </div>
+        <ul class="motivos-list">
+          @for (m of stats()?.motivosRechazo; track m.motivo) {
+            <li>
+              <i class="dot rojo"></i>
+              <span>{{ m.motivo }}</span>
+              <small>{{ m.porcentaje | number: '1.0-1' }}%</small>
+              <strong>{{ m.cantidad }}</strong>
+            </li>
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLAS -->
+  <div class="tables-row">
+    <!-- Productos -->
+    <div class="table-card">
+      <div class="table-header">
+        
+        <h2><span class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 16-9 5-9-5V8l9-5 9 5z"></path><path d="m3 8 9 5 9-5M12 21V13"></path></svg></span> Productos más personalizados</h2>
+      </div>
+      <div class="table-header-cols">
+        <span>Producto / Familia</span>
+        <span class="text-right">N° de cotizaciones</span>
+        <span></span>
+        <!-- Columna vacía para la barra -->
+        <span class="text-right">% del total</span>
+      </div>
+      <div class="table-body">
+        @for (item of stats()?.productosMasPersonalizados; track item.nombre) {
+          <div class="table-row">
+            <span class="col-nombre">{{ item.nombre }}</span>
+            <span class="col-cantidad text-right">{{ item.cantidad }}</span>
+            <div class="col-barra">
+              <div class="barra" [style.width.%]="item.porcentaje"></div>
+            </div>
+            <span class="col-porcentaje text-right">{{ item.porcentaje | number: '1.0-0' }}%</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Características -->
+    <div class="table-card">
+      <div class="table-header">
+        <h2><span class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span> Características más solicitadas</h2>
+      </div>
+      <div class="table-header-cols">
+        <span>Característica</span>
+        <span class="text-right">N° de cotizaciones</span>
+        <span></span>
+        <span class="text-right">% del total</span>
+      </div>
+      <div class="table-body">
+        @for (item of stats()?.caracteristicasMasSolicitadas; track item.nombre) {
+          <div class="table-row">
+            <span class="col-nombre">{{ item.nombre }}</span>
+            <span class="col-cantidad text-right">{{ item.cantidad }}</span>
+            <div class="col-barra">
+              <div class="barra" [style.width.%]="item.porcentaje"></div>
+            </div>
+            <span class="col-porcentaje text-right">{{ item.porcentaje | number: '1.0-0' }}%</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- ÚLTIMAS COTIZACIONES -->
+  <div class="last-cotizaciones-card">
+    <div class="table-header">
+      <h2><span class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M8 13h8M8 17h8"></path></svg></span> Últimas cotizaciones</h2>
+      <a routerLink="/cotizaciones" class="btn-ver-todas">Ver todas →</a>
+    </div>
+    <table class="tabla-cotizaciones">
+      <thead>
+        <tr>
+          <th>N° cotización</th>
+          <th>Fecha</th>
+          <th>Cliente</th>
+          <th>Producto / Familia</th>
+          <th>Monto</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of stats()?.ultimasCotizaciones; track c.numeroCotizacion) {
+          <tr>
+            <td class="font-bold">{{ c.numeroCotizacion }}</td>
+            <td>{{ c.fechaCotizacion | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ c.clienteNombre }}</td>
+            <td>{{ c.familia }}</td>
+            <td>{{ c.total | currency: 'CLP' : 'symbol-narrow' : '1.0-0' : 'es-CL' }}</td>
+            <td>
+              <span class="badge" [ngClass]="getBadgeClass(c.estado)">{{ c.estado }}</span>
+            </td>
+            <td>
+              <button class="btn-ver-ojo" [routerLink]="['/cotizaciones', c.idCotizacion]">
+                👁 Ver
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

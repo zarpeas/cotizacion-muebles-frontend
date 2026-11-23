@@ -30,10 +30,10 @@ export class FormCliente implements OnInit {
     razonSocial: ['', [Validators.required, Validators.maxLength(200)]],
     rut:         ['', [Validators.required, Validators.maxLength(30)]],
     correo:      ['', [Validators.required, Validators.email]],
-    telefono:    ['', [Validators.required, Validators.maxLength(30)]],
-    direccion:   ['', [Validators.required, Validators.maxLength(250)]],
-    ciudad:      ['', [Validators.required, Validators.maxLength(100)]],
-    comuna:      ['', [Validators.required, Validators.maxLength(100)]],
+    telefono:    ['', [Validators.maxLength(30)]],
+    direccion:   ['', [Validators.maxLength(250)]],
+    ciudad:      ['', [Validators.maxLength(100)]],
+    comuna:      ['', [Validators.maxLength(100)]],
     estado: [true],
   });
 

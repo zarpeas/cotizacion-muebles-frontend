@@ -32,7 +32,7 @@ export class Dashboard implements OnInit {
     labels: [],
     datasets: [
       { data: [], label: 'Cotizaciones', backgroundColor: '#c8102e', borderRadius: 8, barPercentage: 0.7 },
-      { data: [], label: 'Aceptadas',    backgroundColor: '#ffb8c4', borderRadius: 8, barPercentage: 0.7 },
+      { data: [], label: 'Aprobadas',    backgroundColor: '#ffb8c4', borderRadius: 8, barPercentage: 0.7 },
     ],
   });
 
@@ -77,7 +77,7 @@ export class Dashboard implements OnInit {
           labels: data.porMes.map(m => m.mes),
           datasets: [
             { data: data.porMes.map(m => m.cotizaciones), label: 'Cotizaciones', backgroundColor: '#c8102e', borderRadius: 8, barPercentage: 0.7 },
-            { data: data.porMes.map(m => m.aceptadas), label: 'Aceptadas', backgroundColor: '#ffb8c4', borderRadius: 8, barPercentage: 0.7 },
+            { data: data.porMes.map(m => m.aceptadas), label: 'Aprobadas', backgroundColor: '#ffb8c4', borderRadius: 8, barPercentage: 0.7 },
           ],
         });
 
@@ -103,8 +103,12 @@ export class Dashboard implements OnInit {
   colorEstado(estado: string): string {
     switch (estado?.toLowerCase()) {
       case 'pendiente': return 'badge-pendiente';
-      case 'aceptada':  return 'badge-aceptada';
-      case 'rechazada': return 'badge-rechazada';
+      case 'aprobado':  
+      case 'aceptada':  
+        return 'badge-aceptada';
+      case 'rechazada': 
+      case 'cancelada': 
+        return 'badge-rechazada';
       default:          return 'badge-default';
     }
   }

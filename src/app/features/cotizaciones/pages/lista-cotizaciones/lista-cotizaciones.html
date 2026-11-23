@@ -68,8 +68,8 @@
         </svg>
       </div>
       <div class="kpi-info">
-        <div class="kpi-value">{{ totalCanceladas() }}</div>
-        <div class="kpi-label">Canceladas</div>
+        <div class="kpi-value">{{ totalRechazadas() }}</div>
+        <div class="kpi-label">Rechazadas</div>
       </div>
     </div>
   </div>
@@ -93,8 +93,8 @@
       <select class="filter-select" (change)="onEstadoChange($event)">
         <option value="todos">Todos los estados</option>
         <option value="pendiente">Pendientes</option>
-        <option value="aceptada">Aprobadas</option>
-        <option value="cancelada">Canceladas</option>
+        <option value="aprobado">Aprobadas</option>
+        <option value="rechazada">Rechazadas</option>
       </select>
 
       <select class="filter-select" (change)="onFamiliaChange($event)">
@@ -217,15 +217,15 @@
       <div class="modal-overlay" (click)="cerrarModalCancelar()">
         <div class="modal-content" (click)="$event.stopPropagation()">
           <div class="modal-header">
-            <h2>Cancelar cotización</h2>
+            <h2>Rechazar cotización</h2>
             <button class="close-btn" (click)="cerrarModalCancelar()">✕</button>
           </div>
           
           <div class="modal-body">
-            <p>¿Estás seguro de que deseas cancelar la cotización <strong>{{ cotizacionACancelar()?.numeroCotizacion }}</strong>?</p>
+            <p>¿Estás seguro de que deseas rechazar la cotización <strong>{{ cotizacionACancelar()?.numeroCotizacion }}</strong>?</p>
             
             <div class="field">
-              <label>Motivo de la cancelación <span class="req">*</span></label>
+              <label>Motivo del rechazo <span class="req">*</span></label>
               <textarea 
                 [value]="cancelMotivo()" 
                 (input)="cancelMotivo.set($any($event.target).value)"
@@ -237,7 +237,7 @@
           <div class="modal-footer">
             <button class="btn btn-secondary" (click)="cerrarModalCancelar()">Volver</button>
             <button class="btn btn-peligro" [disabled]="!cancelMotivo().trim()" (click)="confirmarCancelacion()">
-              Confirmar Cancelación
+              Confirmar Rechazo
             </button>
           </div>
         </div>

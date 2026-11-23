@@ -1,8 +1,14 @@
 <div class="detalle-page">
-
   <button class="btn-volver" (click)="volver()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="m15 18-6-6 6-6"/>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="m15 18-6-6 6-6" />
     </svg>
     Volver al listado
   </button>
@@ -15,7 +21,6 @@
   } @else if (error()) {
     <div class="alert-error">{{ error() }}</div>
   } @else if (cotizacion(); as c) {
-    
     <div class="page-header">
       <div class="title-area">
         <h1>{{ c.numeroCotizacion }}</h1>
@@ -23,12 +28,11 @@
       </div>
       <div class="fecha-area">
         <span>Fecha de emisión</span>
-        <strong>{{ c.fechaCotizacion | date:'dd/MM/yyyy HH:mm' }}</strong>
+        <strong>{{ c.fechaCotizacion | date: 'dd/MM/yyyy HH:mm' }}</strong>
       </div>
     </div>
 
     <div class="detalle-grid">
-      
       <div class="columna-izquierda">
         <!-- CARD CLIENTE -->
         <div class="card">
@@ -89,10 +93,17 @@
               <span class="label">Zócalo / Patas</span>
               <span class="value">{{ c.base }}</span>
             </div>
-            <div class="info-item">
-              <span class="label">Puertas</span>
-              <span class="value">{{ c.cantidadPuertas }} puerta(s) ({{ c.tipoPuerta }})</span>
-            </div>
+            @if (c.cantidadPuertas === 0) {
+              <div class="info-item">
+                <span class="label">Puertas / Casilleros</span>
+                <span class="value">Sin puerta ({{ c.cantidadCasilleros }} casilleros)</span>
+              </div>
+            } @else {
+              <div class="info-item">
+                <span class="label">Puertas</span>
+                <span class="value">{{ c.cantidadPuertas }} puerta(s) ({{ c.tipoPuerta }})</span>
+              </div>
+            }
             <div class="info-item">
               <span class="label">Bandejas</span>
               <span class="value">{{ c.cantidadBandejas }} bandejas</span>
@@ -109,13 +120,16 @@
         <!-- CARD RESUMEN DE ESTIMACIÓN -->
         <div class="card destacado-card">
           <div class="card-header">
-            <h2>Resumen de Estimación (IA)</h2>
+            <h2>Resumen de Estimación</h2>
             <span class="badge-ml">Modelo ML</span>
           </div>
+
           <div class="card-body">
             <div class="fin-row">
               <span class="label">Costo de fabricación unitario</span>
-              <span class="value">{{ c.costoFabricacion | currency:'CLP':'symbol-narrow':'1.0-0' }}</span>
+              <span class="value">{{
+                c.costoFabricacion | currency: 'CLP' : 'symbol-narrow' : '1.0-0'
+              }}</span>
             </div>
             <div class="fin-row">
               <span class="label">Markup aplicado</span>
@@ -123,20 +137,29 @@
             </div>
             <div class="fin-row">
               <span class="label">Confianza del modelo</span>
-              <span class="value">{{ (c.confianzaMl * 100) | number:'1.0-2' }}%</span>
+              <strong class="est-valor">{{ c.confianzaMl ?? 0 | number: '1.0-2' }}%</strong>
             </div>
-            
-            <div class="divider"></div>
-            
+            <div class="fin-row">
+              <span class="label">Error promedio del modelo (MAPE)</span>
+              <strong class="est-valor">
+                {{ cotizacion()?.errorPromedioMape ?? 0 | number: '1.2-2' }}%
+              </strong>
+            </div>
+
             <div class="fin-row total-destacado">
               <span class="label">Precio de venta sugerido</span>
-              <span class="value">{{ c.precioVentaSugerido | currency:'CLP':'symbol-narrow':'1.0-0' }}</span>
+              <span class="value">{{
+                c.precioVentaSugerido | currency: 'CLP' : 'symbol-narrow' : '1.0-0'
+              }}</span>
             </div>
           </div>
         </div>
 
         <!-- CARD OBSERVACIONES / MOTIVO -->
-        @if (c.observaciones && (c.estado?.toLowerCase() === 'cancelada' || c.estado?.toLowerCase() === 'rechazada')) {
+        @if (
+          c.observaciones &&
+          (c.estado?.toLowerCase() === 'cancelada' || c.estado?.toLowerCase() === 'rechazada')
+        ) {
           <div class="card alert-card">
             <div class="card-header">
               <h2>Motivo / Observaciones</h2>
@@ -150,23 +173,53 @@
         <!-- ACCIONES -->
         <div class="acciones-footer">
           @if (c.estado?.toLowerCase() === 'pendiente') {
+            @if (puedeEditarEstimacion()) {
+              <button type="button" class="btn btn-editar" (click)="abrirEdicionEstimacion()">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                </svg>
+                Editar estimación
+              </button>
+            }
             <button type="button" class="btn btn-success" (click)="aceptarCotizacion()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m5 12 5 5 9-10"/>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="m5 12 5 5 9-10" />
               </svg>
               Aceptar Cotización
             </button>
             <button type="button" class="btn btn-peligro" (click)="abrirModalCancelar()">
-              Cancelar Cotización
+              Rechazar Cotización
             </button>
           }
-          
+
           @if (c.estado?.toLowerCase() === 'aceptada') {
             <button type="button" class="btn btn-primary" (click)="generarPDF()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
               Generar PDF
             </button>
@@ -185,24 +238,96 @@
         <h2>Cancelar cotización</h2>
         <button class="close-btn" (click)="cerrarModalCancelar()">✕</button>
       </div>
-      
+
       <div class="modal-body">
-        <p>¿Estás seguro de que deseas cancelar la cotización <strong>{{ cotizacion()?.numeroCotizacion }}</strong>?</p>
-        
+        <p>
+          ¿Estás seguro de que deseas cancelar la cotización
+          <strong>{{ cotizacion()?.numeroCotizacion }}</strong
+          >?
+        </p>
+
         <div class="field">
           <label>Motivo de la cancelación <span class="req">*</span></label>
-          <textarea 
-            [value]="cancelMotivo()" 
+          <textarea
+            [value]="cancelMotivo()"
             (input)="cancelMotivo.set($any($event.target).value)"
             placeholder="Ej: El cliente decidió no comprar, precio no competitivo..."
-            rows="3"></textarea>
+            rows="3"
+          ></textarea>
         </div>
       </div>
-      
+
       <div class="modal-footer">
         <button class="btn btn-secondary" (click)="cerrarModalCancelar()">Volver</button>
-        <button class="btn btn-peligro" [disabled]="!cancelMotivo().trim()" (click)="confirmarCancelacion()">
+        <button
+          class="btn btn-peligro"
+          [disabled]="!cancelMotivo().trim()"
+          (click)="confirmarCancelacion()"
+        >
           Confirmar Cancelación
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL DE EDICIÓN DE ESTIMACIÓN -->
+@if (showEditarModal()) {
+  <div class="modal-overlay" (click)="cerrarEdicionEstimacion()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Editar estimación</h2>
+        <button class="close-btn" (click)="cerrarEdicionEstimacion()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p>
+          Cotización <strong>{{ cotizacion()?.numeroCotizacion }}</strong
+          >. Modifica solo el costo de fabricación; el precio sugerido se recalculará con la regla
+          de markup vigente y la confianza del modelo pasará a 0%.
+        </p>
+
+        <div class="field">
+          <label for="costoFabricacionModal"
+            >Costo de fabricación unitario <span class="req">*</span></label
+          >
+          <input
+            id="costoFabricacionModal"
+            class="input-moneda"
+            type="number"
+            min="1"
+            step="1"
+            [value]="costoEditado() ?? ''"
+            (input)="onCostoChange($any($event.target).value)"
+          />
+        </div>
+
+        <div class="resumen-edicion">
+          <div class="fin-row">
+            <span class="label">Markup aplicado</span>
+            <span class="value">×{{ cotizacion()?.markupAplicado }}</span>
+          </div>
+          <div class="fin-row">
+            <span class="label">Confianza del modelo</span>
+            <strong class="est-valor">0%</strong>
+          </div>
+          <div class="fin-row total-destacado">
+            <span class="label">Nuevo precio de venta sugerido</span>
+            <span class="value">{{
+              precioCalculado() ?? 0 | currency: 'CLP' : 'symbol-narrow' : '1.0-0'
+            }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="cerrarEdicionEstimacion()">Cancelar</button>
+        <button
+          class="btn btn-primary"
+          [disabled]="guardandoEstimacion() || precioCalculado() === null"
+          (click)="guardarEstimacion()"
+        >
+          {{ guardandoEstimacion() ? 'Guardando...' : 'Guardar estimación' }}
         </button>
       </div>
     </div>

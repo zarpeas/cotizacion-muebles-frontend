@@ -36,7 +36,13 @@
       </svg>
       Cotizaciones
     </a>
-
+    <!-- Usuario: solo ADMIN -->
+      @if (auth.isAdmin()) {
+      <a routerLink="/usuarios" routerLinkActive="active" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z"></path><path d="m9 12 2 2 4-4"></path></svg>
+        Usuarios
+      </a>
+    }
     <!-- Reportes: solo ADMIN -->
     @if (auth.isAdmin()) {
       <a class="nav-item" routerLink="/reportes" routerLinkActive="active">

@@ -7,22 +7,23 @@ import {
   CotizacionConfirmada,
   CotizacionResumen,
   CotizacionDetalle,
-  PaginatedResponse
+  PaginatedResponse,
 } from '../models/cotizacion.models';
 
 @Service()
 export class CotizacionService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8080/api/cotizacion';
+  private readonly apiUrl = '/api/cotizacion';
 
   /** Lista todas las cotizaciones guardadas. */
   listar(): Observable<CotizacionResumen[]> {
     // Pedimos una página grande para traer todo y mantener tu filtrado local (client-side)
     const params = new HttpParams().set('page', '0').set('size', '1000');
-    
-    return this.http.get<PaginatedResponse<CotizacionResumen>>(`${this.apiUrl}/listar`, { params })
+
+    return this.http
+      .get<PaginatedResponse<CotizacionResumen>>(`${this.apiUrl}/listar`, { params })
       .pipe(
-        map(response => response.content) // Extraemos solo el arreglo de datos
+        map((response) => response.content), // Extraemos solo el arreglo de datos
       );
   }
 
@@ -33,15 +34,20 @@ export class CotizacionService {
 
   /** Predice y guarda cotización + features + predicción en BD. */
   confirmar(input: any, idCliente: number): Observable<any> {
-    const params = new HttpParams()
-      .set('idCliente', idCliente)
-      .set('idUsuario', 1); // Por ahora usamos el usuario 1 por defecto
+    const params = new HttpParams().set('idCliente', idCliente).set('idUsuario', 1); // Por ahora usamos el usuario 1 por defecto
 
     return this.http.post<any>(`${this.apiUrl}/confirmar`, input, { params });
   }
 
   obtener(id: number): Observable<CotizacionDetalle> {
     return this.http.get<CotizacionDetalle>(`${this.apiUrl}/${id}`);
+  }
+
+  /** Reestima manualmente una cotización pendiente (solo costo de fabricación). */
+  reestimar(id: number, costoFabricacion: number): Observable<CotizacionDetalle> {
+    return this.http.patch<CotizacionDetalle>(`${this.apiUrl}/${id}/reestimar`, {
+      costoFabricacion,
+    });
   }
 
   cancelar(id: number, motivo: string): Observable<void> {

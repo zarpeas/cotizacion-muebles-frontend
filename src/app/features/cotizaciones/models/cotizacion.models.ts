@@ -17,10 +17,10 @@ export interface MuebleInput {
   cantidad?: number;
   cantidadPuertas?: number;
   cantidadBandejas?: number;
-  kgTotal?: number;
   divisiones?: number;
   idColor?: number;
   codigoFamilia?: string;
+  cantidadCasilleros?: number;
 
   // Del wizard
   idCliente?: number;
@@ -51,13 +51,16 @@ export interface PrediccionResponse {
   aplicaDescuento: boolean;
   descuentoSugeridoMin: number;
   descuentoSugeridoMax: number;
-  total?: number; // Usado en el wizard
+  total?: number; 
+  mape: number;
+  mapeEsperadoPct?: number;
+  errorPromedioMape: number;
 }
 
 export interface CotizacionConfirmada {
   idCotizacion: number;
   numeroCotizacion: string;
-  prediccion?: any; // Usado en el wizard
+  prediccion?: any; 
 }
 
 
@@ -89,6 +92,8 @@ export interface CotizacionDetalle {
   confianzaMl: number;
   precioVentaSugerido: number;
   montoTotal: number;
+  errorPromedioMape: number;
+  cantidadCasilleros: number;
 }
 
 

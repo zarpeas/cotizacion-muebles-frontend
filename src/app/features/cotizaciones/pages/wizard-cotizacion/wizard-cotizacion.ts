@@ -58,7 +58,7 @@ export class WizardCotizacion implements OnInit {
   // ============ PASO 2: PRODUCTO ============
   readonly form = signal<MuebleInput>({
     idCategoriaProducto: 0,
-    codigoFamilia: '', // <-- NUEVO CAMPO AGREGADO
+    codigoFamilia: '', 
     idBase: 0,
     idCerradura: 0,
     idTipoPuerta: 0,
@@ -69,8 +69,9 @@ export class WizardCotizacion implements OnInit {
     cantidad: 1,
     cantidadPuertas: 1,
     cantidadBandejas: 0,
+    cantidadCasilleros: 2,
     techoInclinado: false,
-    kgTotal: 50,
+
     divisiones: 1
   });
 
@@ -182,26 +183,39 @@ export class WizardCotizacion implements OnInit {
   limpiarCliente() { this.clienteSeleccionado.set(null); this.busquedaCliente.set(''); }
 
   // ============ PASO 2 LÓGICA ============
-  setNum(campo: keyof MuebleInput, event: Event) {
-    const valor = Number((event.target as HTMLInputElement).value);
+  
+  // MÉTODO UNIFICADO PARA NÚMEROS (Acepta Eventos y Valores directos de ngModel)
+  setNum(campo: keyof MuebleInput, eventOrValue: any) {
+    let valor: number;
+    if (eventOrValue instanceof Event) {
+      valor = Number((eventOrValue.target as HTMLInputElement).value);
+    } else {
+      valor = Number(eventOrValue);
+    }
     this.form.update(f => ({ ...f, [campo]: valor }));
     this.prediccion.set(null);
   }
 
-  // NUEVO MÉTODO PARA CAPTURAR EL TEXTO DEL CÓDIGO
   setText(campo: keyof MuebleInput, event: Event) {
     const valor = (event.target as HTMLInputElement).value;
     this.form.update(f => ({ ...f, [campo]: valor }));
     this.prediccion.set(null);
   }
 
-  incrementar(campo: 'cantidad' | 'cantidadPuertas' | 'cantidadBandejas') {
-    this.form.update(f => ({ ...f, [campo]: (f[campo] as number || 0) + 1 }));
+  incrementar(campo: 'cantidad' | 'cantidadPuertas' | 'cantidadBandejas' | 'cantidadCasilleros') {
+    if (campo === 'cantidadPuertas' && this.isSinPuerta()) return;
+    if (campo === 'cantidadCasilleros' && !this.isSinPuerta()) return;
+    
+    const minVal = campo === 'cantidad' ? 1 : (campo === 'cantidadPuertas' || campo === 'cantidadCasilleros' ? 1 : 0);
+    this.form.update(f => ({ ...f, [campo]: (f[campo] as number || minVal) + 1 }));
     this.prediccion.set(null);
   }
+  decrementar(campo: 'cantidad' | 'cantidadPuertas' | 'cantidadBandejas' | 'cantidadCasilleros') {
+    if (campo === 'cantidadPuertas' && this.isSinPuerta()) return;
+    if (campo === 'cantidadCasilleros' && !this.isSinPuerta()) return;
 
-  decrementar(campo: 'cantidad' | 'cantidadPuertas' | 'cantidadBandejas') {
-    this.form.update(f => ({ ...f, [campo]: Math.max(0, (f[campo] as number || 0) - 1) }));
+    const minVal = campo === 'cantidad' ? 1 : (campo === 'cantidadPuertas' || campo === 'cantidadCasilleros' ? 1 : 0);
+    this.form.update(f => ({ ...f, [campo]: Math.max(minVal, (f[campo] as number || 0) - 1) }));
     this.prediccion.set(null);
   }
 
@@ -216,6 +230,38 @@ export class WizardCotizacion implements OnInit {
     this.form.update(f => ({ ...f, idColor: 1 })); 
   }
 
+  // ============ LÓGICA TIPO DE PUERTA ============
+  
+  readonly isSinPuerta = computed(() => {
+    const id = this.form().idTipoPuerta;
+    const tipo = this.tiposPuerta().find((t: any) => this.getId(t) === id);
+    return tipo ? tipo.nombre.toLowerCase().includes('sin puerta') : false;
+  });
+  readonly cantidadPuertasActual = computed(() => {
+    if (this.isSinPuerta()) return 0;
+    const val = this.form().cantidadPuertas ?? 1;
+    return Math.max(1, val); 
+  });
+  setTipoPuerta(id: number) {
+    this.form.update(f => {
+      const tipo = this.tiposPuerta().find((t: any) => this.getId(t) === id);
+      const esSinPuerta = tipo ? tipo.nombre.toLowerCase().includes('sin puerta') : false;
+      
+      return {
+        ...f,
+        idTipoPuerta: id,
+        cantidadPuertas: esSinPuerta ? 0 : (f.cantidadPuertas === 0 ? 1 : f.cantidadPuertas),
+        cantidadCasilleros: esSinPuerta ? (f.cantidadCasilleros === 0 ? 1 : f.cantidadCasilleros) : 0
+
+      };
+    });
+    this.prediccion.set(null); 
+  }
+  readonly cantidadCasillerosActual = computed(() => {
+    if (!this.isSinPuerta()) return 0;
+    const val = this.form().cantidadCasilleros ?? 1;
+    return Math.max(1, val); 
+  });
   // ============ HELPERS PARA EL HTML ============
   readonly cantidad = computed(() => this.form().cantidad || 1);
   readonly altoCm = computed(() => this.form().alto);
@@ -315,10 +361,14 @@ export class WizardCotizacion implements OnInit {
     this.cargando.set(true);
     this.error.set(null);
 
+    const esSinPuerta = this.isSinPuerta();
+
     const payload: any = {
       ...this.form(),
       cantidad: this.cantidad(),
-      techoInclinado: this.form().techoInclinado ? 1 : 0
+      techoInclinado: this.form().techoInclinado ? 1 : 0,
+      cantidadPuertas: esSinPuerta ? 0 : (this.form().cantidadPuertas || 1),
+      cantidadCasilleros: esSinPuerta ? (this.form().cantidadCasilleros || 1) : 0
     };
 
     const idCliente = this.clienteSeleccionado()!.idCliente;
@@ -342,10 +392,10 @@ export class WizardCotizacion implements OnInit {
   nueva(): void {
     this.form.set({
       idCategoriaProducto: 0, 
-      codigoFamilia: '', // <-- RESETEADO AQUÍ TAMBIÉN
+      codigoFamilia: '', 
       idBase: 0, idCerradura: 0, idTipoPuerta: 0, idEspesor: 0,
-      alto: 180, ancho: 90, fondo: 50, cantidad: 1, cantidadPuertas: 1, cantidadBandejas: 0,
-      techoInclinado: false, kgTotal: 50, divisiones: 1
+      alto: 180, ancho: 90, fondo: 50, cantidad: 1, cantidadPuertas: 1, cantidadCasilleros: 1, cantidadBandejas: 0,
+      techoInclinado: false, divisiones: 1
     });
     this.colorSeleccionado.set('Gris Eco');
     this.techoInclinadoSel.set('Sin techo inclinado');

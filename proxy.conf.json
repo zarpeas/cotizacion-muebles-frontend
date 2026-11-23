@@ -4,5 +4,14 @@
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
+  },
+
+  "/ml": {
+    "target": "http://localhost:8000",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
   }
+
+  
 }

@@ -10,7 +10,7 @@ export interface CatalogoItem {
 @Injectable({ providedIn: 'root' })
 export class CatalogoService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8080/api/catalogos'; // Ajusta si tu ruta es distinta
+  private readonly apiUrl = '/api/catalogos'; 
 
   getCategorias(): Observable<CatalogoItem[]> {
     return this.http.get<CatalogoItem[]>(`${this.apiUrl}/categorias`);

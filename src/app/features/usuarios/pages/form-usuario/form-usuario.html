@@ -1,1 +1,217 @@
-<p>form-usuario works!</p>
+<!-- src/app/features/usuarios/pages/form-usuario/form-usuario.html -->
+
+<div class="form-page">
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <h1>{{ modoEdicion() ? 'Editar usuario' : 'Registrar usuario' }}</h1>
+      <p>
+        {{
+          modoEdicion()
+            ? 'Actualiza los datos del usuario.'
+            : 'Completa los datos para crear un nuevo usuario.'
+        }}
+      </p>
+    </div>
+    <a class="btn btn-secondary" routerLink="/usuarios">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="m15 18-6-6 6-6" />
+      </svg>
+      Volver al listado
+    </a>
+  </div>
+
+  @if (cargando()) {
+    <div class="card placeholder">Cargando usuario...</div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="guardar()" class="card">
+      <!-- ============ DATOS PERSONALES ============ -->
+      <section class="section">
+        <div class="section-header">
+          <div class="section-icon">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </div>
+          <h2>Datos personales</h2>
+        </div>
+
+        <div class="grid-3">
+          <div class="field">
+            <label>Nombres <span class="req">*</span></label>
+            <input
+              type="text"
+              formControlName="nombres"
+              placeholder="Ej. Karen Andrea"
+              [class.input-error]="form.get('nombres')?.invalid && form.get('nombres')?.touched"
+            />
+            @if (form.get('nombres')?.invalid && form.get('nombres')?.touched) {
+              <small class="field-error">Los nombres son obligatorios.</small>
+            }
+          </div>
+
+          <div class="field">
+            <label>Apellidos <span class="req">*</span></label>
+            <input
+              type="text"
+              formControlName="apellidos"
+              placeholder="Ej. Arias Soto"
+              [class.input-error]="form.get('apellidos')?.invalid && form.get('apellidos')?.touched"
+            />
+            @if (form.get('apellidos')?.invalid && form.get('apellidos')?.touched) {
+              <small class="field-error">Los apellidos son obligatorios.</small>
+            }
+          </div>
+
+          <div class="field">
+            <label>Correo electrónico <span class="req">*</span></label>
+            <input
+              type="email"
+              formControlName="correo"
+              placeholder="usuario@movilockers.cl"
+              [class.input-error]="form.get('correo')?.invalid && form.get('correo')?.touched"
+            />
+            @if (form.get('correo')?.invalid && form.get('correo')?.touched) {
+              <small class="field-error">Ingresa un correo válido.</small>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ ACCESO AL SISTEMA ============ -->
+      <section class="section">
+        <div class="section-header">
+          <div class="section-icon">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </div>
+          <h2>Acceso al sistema</h2>
+        </div>
+
+        <div class="grid-3">
+          <div class="field">
+            <label>Usuario <span class="req">*</span></label>
+            <input
+              type="text"
+              formControlName="username"
+              placeholder="Ej. karias"
+              [class.input-error]="form.get('username')?.invalid && form.get('username')?.touched"
+            />
+            @if (form.get('username')?.invalid && form.get('username')?.touched) {
+              <small class="field-error">El nombre de usuario es obligatorio.</small>
+            }
+          </div>
+
+          <div class="field">
+            <label>Rol <span class="req">*</span></label>
+            <select formControlName="rol">
+              <option value="ASESOR">Asesor</option>
+              <option value="ADMIN">Administrador</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Estado</label>
+            <select formControlName="estado">
+              <option [ngValue]="true">Activo</option>
+              <option [ngValue]="false">Deshabilitado</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ CONTRASEÑA ============ -->
+      <section class="section">
+        <div class="section-header">
+          <div class="section-icon">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"
+              />
+            </svg>
+          </div>
+          <h2>Contraseña</h2>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>
+              Contraseña
+              @if (!modoEdicion()) {
+                <span class="req">*</span>
+              }
+            </label>
+            <input
+              [type]="mostrarPassword() ? 'text' : 'password'"
+              formControlName="password"
+              [placeholder]="modoEdicion() ? 'Nueva contraseña (opcional)' : 'Mínimo 8 caracteres'"
+              [class.input-error]="form.get('password')?.invalid && form.get('password')?.touched"
+            />
+            <small class="field-hint">
+              @if (modoEdicion()) {
+                Deja este campo vacío para mantener la contraseña actual.
+              } @else {
+                Debe tener al menos 8 caracteres, con letras y números.
+              }
+            </small>
+            @if (form.get('password')?.invalid && form.get('password')?.touched) {
+              <small class="field-error">La contraseña debe tener al menos 8 caracteres.</small>
+            }
+          </div>
+        </div>
+
+        <div class="estado-toggle">
+          <label class="switch-label">
+            <input type="checkbox" (change)="mostrarPassword.set($any($event.target).checked)" />
+            <span class="switch-slider"></span>
+            <div class="switch-text">
+              <strong>Mostrar contraseña</strong>
+              <small>Visualiza el texto ingresado en el campo de contraseña.</small>
+            </div>
+          </label>
+        </div>
+      </section>
+
+      <!-- FOOTER -->
+      <div class="form-footer">
+        <a routerLink="/usuarios" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+          {{
+            guardando() ? 'Guardando...' : modoEdicion() ? 'Guardar cambios' : 'Registrar usuario'
+          }}
+        </button>
+      </div>
+    </form>
+  }
+</div>

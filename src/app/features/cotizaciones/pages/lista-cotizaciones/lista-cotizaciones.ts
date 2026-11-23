@@ -6,7 +6,7 @@ import { CotizacionService } from '../../services/cotizacion';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { CotizacionResumen } from '../../models/cotizacion.models';
 
-type EstadoFiltro = 'todos' | 'pendiente' | 'aceptada' | 'rechazada' | 'cancelada';
+type EstadoFiltro = 'todos' | 'pendiente' | 'aprobado' | 'rechazada' | 'cancelada';
 
 @Component({
   selector: 'app-lista-cotizaciones',
@@ -63,13 +63,13 @@ export class ListaCotizaciones implements OnInit {
     this.cotizaciones().filter(c => c.estado?.toLowerCase() !== 'cancelada').length);
 
   readonly totalAprobadas = computed(() =>
-    this.cotizaciones().filter(c => c.estado?.toLowerCase() === 'aceptada').length);
+    this.cotizaciones().filter(c => c.estado?.toLowerCase() === 'aprobado').length);
 
   readonly totalPendientes = computed(() =>
     this.cotizaciones().filter(c => c.estado?.toLowerCase() === 'pendiente').length);
 
-  readonly totalCanceladas = computed(() =>
-    this.cotizaciones().filter(c => c.estado?.toLowerCase() === 'cancelada').length);
+  readonly totalRechazadas = computed(() =>
+    this.cotizaciones().filter(c => c.estado?.toLowerCase() === 'rechazada').length);
 
   // ============ Familias disponibles ============
   readonly familias = computed(() => {
@@ -104,7 +104,10 @@ export class ListaCotizaciones implements OnInit {
     const ff = this.familiaFiltro();
 
     if (ef !== 'todos') {
-      lista = lista.filter(c => c.estado?.toLowerCase() === ef);
+      lista = lista.filter(c => {
+        const estadoDb = (c.estado || '').toLowerCase().trim();
+        return estadoDb === ef.toLowerCase();
+      });
     }
     if (ff !== 'todas') {
       lista = lista.filter(c => c.productoFamilia === ff);
@@ -187,7 +190,7 @@ export class ListaCotizaciones implements OnInit {
   estadoClass(estado: string): string {
     switch (estado?.toLowerCase()) {
       case 'pendiente': return 'badge-pendiente';
-      case 'aceptada':  return 'badge-aceptada';
+      case 'aprobado':  return 'badge-aceptada';
       case 'rechazada': return 'badge-rechazada';
       case 'cancelada': return 'badge-cancelada';
       default:          return 'badge-default';
@@ -214,18 +217,18 @@ export class ListaCotizaciones implements OnInit {
     if (!c) return;
 
     if (!this.cancelMotivo().trim()) {
-      this.toast.error('Debes ingresar un motivo para cancelar.');
+      this.toast.error('Debes ingresar un motivo para rechazar.');
       return;
     }
 
     this.cotizacionService.cancelar(c.idCotizacion, this.cancelMotivo()).subscribe({
       next: () => {
-        this.toast.success('Cotización cancelada correctamente');
+        this.toast.success('Cotización rechazada correctamente');
         this.cerrarModalCancelar();
         this.cargar(); 
       },
       error: (err) => {
-        this.toast.error('Error al cancelar: ' + (err?.error?.message ?? err.message));
+        this.toast.error('Error al rechazar: ' + (err?.error?.message ?? err.message));
       },
     });
   }
