@@ -1,8 +1,13 @@
-
 export type Familia = string;
-export const FAMILIAS: any[] = []; 
-export const ESPESORES: any[] = [];
+export const FAMILIAS: string[] = [];
 
+export interface EspesorItem {
+  id?: number;
+  nombre?: string;
+  milimetros: number;
+}
+
+export const ESPESORES: EspesorItem[] = [];
 
 export interface MuebleInput {
   // Del backend original
@@ -21,11 +26,12 @@ export interface MuebleInput {
   idColor?: number;
   codigoFamilia?: string;
   cantidadCasilleros?: number;
+  techoInclinado?: boolean;
 
-  // Del wizard
+  // Campos del wizard que aún se reenvían al backend
   idCliente?: number;
   familia?: string;
-  espesor?: any;
+  espesor?: string | number;
   nPuertas?: number;
   bandeja?: number;
   markupAplicado?: number;
@@ -34,13 +40,18 @@ export interface MuebleInput {
   trasera?: number;
   puertas?: number;
   cabeza?: number;
-  base?: any;
-  
+  base?: string;
 
-  techoInclinado?: any; 
+  // Acceso dinámico desde los controles del wizard.
+  [key: string]: string | number | boolean | undefined;
+}
 
- 
-  [key: string]: any; 
+/** Payload enviado a /confirmar: el backend acepta 1/0 para techo inclinado. */
+export interface MuebleConfirmacionInput extends Omit<MuebleInput, 'techoInclinado'> {
+  techoInclinado: number;
+  /** Valores ya mostrados en el wizard; se guardan tal cual en BD. */
+  costoFabricacionUnitario: number;
+  precioVentaSugerido: number;
 }
 
 export interface PrediccionResponse {
@@ -51,18 +62,25 @@ export interface PrediccionResponse {
   aplicaDescuento: boolean;
   descuentoSugeridoMin: number;
   descuentoSugeridoMax: number;
-  total?: number; 
+  total?: number;
   mape: number;
   mapeEsperadoPct?: number;
+  mapeMedianaPct?: number;
   errorPromedioMape: number;
 }
 
+/** Respuesta de /confirmar: devuelve los valores efectivamente guardados. */
 export interface CotizacionConfirmada {
-  idCotizacion: number;
-  numeroCotizacion: string;
-  prediccion?: any; 
+  costoFabricacionUnitario: number;
+  precioVentaSugerido: number;
+  confianzaR2: number;
+  modelo: string;
+  aplicaDescuento: boolean;
+  descuentoSugeridoMin: number;
+  descuentoSugeridoMax: number;
+  mapeEsperadoPct: number;
+  mapeMedianaPct: number;
 }
-
 
 export interface CotizacionDetalle {
   idCotizacion: number;
@@ -96,7 +114,6 @@ export interface CotizacionDetalle {
   cantidadCasilleros: number;
 }
 
-
 export interface CotizacionResumen {
   idCotizacion: number;
   numeroCotizacion: string;
@@ -110,7 +127,7 @@ export interface CotizacionResumen {
 
 export interface PaginatedResponse<T> {
   content: T[];
-  pageable: any;
+  pageable: unknown;
   totalPages: number;
   totalElements: number;
   last: boolean;

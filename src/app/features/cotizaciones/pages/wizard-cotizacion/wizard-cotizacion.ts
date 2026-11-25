@@ -1,410 +1,112 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CotizacionService } from '../../services/cotizacion';
-import { CatalogoService } from '../../services/catalogo.service';
-import { ClienteService } from '../../../clientes/services/cliente';
+import { WizardStateService } from '../../services/wizard-state.service';
 import { Cliente } from '../../../clientes/models/cliente.model';
-import { MuebleInput, PrediccionResponse, CotizacionConfirmada } from '../../models/cotizacion.models';
+import { MuebleInput } from '../../models/cotizacion.models';
+
+type CampoCantidad = 'cantidad' | 'cantidadPuertas' | 'cantidadBandejas' | 'cantidadCasilleros';
 
 @Component({
   selector: 'app-wizard-cotizacion',
   standalone: true,
   imports: [CommonModule, FormsModule, CurrencyPipe],
+  providers: [WizardStateService],
   styleUrl: './wizard-cotizacion.css',
   templateUrl: './wizard-cotizacion.html',
 })
 export class WizardCotizacion implements OnInit {
-  private readonly cotizacionService = inject(CotizacionService);
-  private readonly catalogoService = inject(CatalogoService);
-  private readonly clienteService = inject(ClienteService);
   private readonly router = inject(Router);
+  private readonly state = inject(WizardStateService);
 
   readonly pasos = [
-    { n: 1, label: 'Cliente',  sub: 'Selecciona el cliente' },
+    { n: 1, label: 'Cliente', sub: 'Selecciona el cliente' },
     { n: 2, label: 'Producto', sub: 'Configura componentes' },
-    { n: 3, label: 'Reglas',   sub: 'Markup según cantidad' },
-    { n: 4, label: 'Resumen',  sub: 'Revisa y confirma' },
+    { n: 3, label: 'Reglas', sub: 'Markup según cantidad' },
+    { n: 4, label: 'Resumen', sub: 'Revisa y confirma' },
   ];
 
-  readonly paso = signal(1);
-  readonly idUsuario = 1;
+  // El componente solo expone el estado; las reglas viven en WizardStateService.
+  readonly paso = this.state.paso;
+  readonly error = this.state.error;
+  readonly cargando = this.state.cargando;
+  readonly clientes = this.state.clientes;
+  readonly clienteSeleccionado = this.state.clienteSeleccionado;
+  readonly busquedaCliente = this.state.busquedaCliente;
+  readonly cargandoClientes = this.state.cargandoClientes;
+  readonly mostrarListaClientes = this.state.mostrarListaClientes;
+  readonly clientesFiltrados = this.state.clientesFiltrados;
 
-  // ============ CATÁLOGOS ============
-  readonly categorias = signal<any[]>([]);
-  readonly bases = signal<any[]>([]);
-  readonly cerraduras = signal<any[]>([]);
-  readonly tiposPuerta = signal<any[]>([]);
-  readonly espesores = signal<any[]>([]);
+  readonly categorias = this.state.categorias;
+  readonly bases = this.state.bases;
+  readonly cerraduras = this.state.cerraduras;
+  readonly tiposPuerta = this.state.tiposPuerta;
+  readonly espesores = this.state.espesores;
+  readonly form = this.state.form;
+  readonly colorSeleccionado = this.state.colorSeleccionado;
+  readonly techoInclinadoSel = this.state.techoInclinadoSel;
+  readonly colores = this.state.colores;
 
-  // ============ PASO 1: CLIENTE ============
-  readonly clientes = signal<Cliente[]>([]);
-  readonly clienteSeleccionado = signal<Cliente | null>(null);
-  readonly busquedaCliente = signal('');
-  readonly cargandoClientes = signal(false);
-  readonly mostrarListaClientes = signal(false);
+  readonly isSinPuerta = this.state.isSinPuerta;
+  readonly cantidadPuertasActual = this.state.cantidadPuertasActual;
+  readonly cantidadCasillerosActual = this.state.cantidadCasillerosActual;
+  readonly cantidad = this.state.cantidad;
+  readonly altoCm = this.state.altoCm;
+  readonly anchoCm = this.state.anchoCm;
+  readonly fondoCm = this.state.fondoCm;
+  readonly colorActualHex = this.state.colorActualHex;
 
-  readonly clientesFiltrados = computed(() => {
-    const q = this.busquedaCliente().toLowerCase().trim();
-    const lista = this.clientes();
-    if (!q) return lista.slice(0, 8);
-    return lista.filter(c =>
-      c.razonSocial?.toLowerCase().includes(q) ||
-      c.rut?.toLowerCase().includes(q)
-    ).slice(0, 8);
-  });
+  readonly LIMITES_DIMENSIONES = this.state.LIMITES_DIMENSIONES;
+  readonly rangoInvalido = this.state.rangoInvalido;
+  readonly dimensionesValidas = this.state.dimensionesValidas;
+  readonly mensajeDimensiones = this.state.mensajeDimensiones;
 
-  // ============ PASO 2: PRODUCTO ============
-  readonly form = signal<MuebleInput>({
-    idCategoriaProducto: 0,
-    codigoFamilia: '', 
-    idBase: 0,
-    idCerradura: 0,
-    idTipoPuerta: 0,
-    idEspesor: 0,
-    alto: 180,
-    ancho: 90,
-    fondo: 50,
-    cantidad: 1,
-    cantidadPuertas: 1,
-    cantidadBandejas: 0,
-    cantidadCasilleros: 2,
-    techoInclinado: false,
+  readonly tipoCerradura = this.state.tipoCerradura;
+  readonly categoriaSeleccionada = this.state.categoriaSeleccionada;
+  readonly espesorSeleccionado = this.state.espesorSeleccionado;
+  readonly zocaloOPatas = this.state.zocaloOPatas;
+  readonly tipoPuerta = this.state.tipoPuerta;
 
-    divisiones: 1
-  });
+  readonly prediccion = this.state.prediccion;
+  readonly confirmada = this.state.confirmada;
+  readonly costoUnitario = this.state.costoUnitario;
+  readonly markupActual = this.state.markupActual;
+  readonly etiquetaMarkup = this.state.etiquetaMarkup;
+  readonly precioUnitario = this.state.precioUnitario;
+  readonly precioSugeridoTotal = this.state.precioSugeridoTotal;
+  readonly aplicaDescuento = this.state.aplicaDescuento;
 
-  readonly colorSeleccionado = signal('Gris Eco');
-  readonly techoInclinadoSel = signal<string>('Sin techo inclinado');
+  readonly iniciales = this.state.iniciales;
+  readonly getId = (obj: unknown): number => this.state.getId(obj);
 
-  readonly colores = [
-    { nombre: 'Gris Eco', hex: '#dfe2e1' },
-    { nombre: 'Gris Ágata', hex: '#9a9ea3' },
-    { nombre: 'Rojo', hex: '#bd2230' },
-    { nombre: 'Azul', hex: '#213a6b' },
-    { nombre: 'Verde', hex: '#3aa655' },
-    { nombre: 'Amarillo', hex: '#fbe83a' },
-    { nombre: 'Negro', hex: '#0b0b0d' },
-    { nombre: 'Blanco antimicrobiano', hex: '#eaf1f3' },
-    { nombre: 'Blanco', hex: '#ffffff' },
-  ];
+  readonly irA = (n: number): void => this.state.irA(n);
+  readonly siguiente = (): void => this.state.siguiente();
+  readonly anterior = (): void => this.state.anterior();
+  readonly buscarCliente = (event: Event): void => this.state.buscarCliente(event);
+  readonly seleccionarCliente = (c: Cliente): void => this.state.seleccionarCliente(c);
+  readonly limpiarCliente = (): void => this.state.limpiarCliente();
+  readonly setId = (campo: keyof MuebleInput, valor: number): void =>
+    this.state.setId(campo, valor);
+  readonly setNum = (campo: keyof MuebleInput, valor: unknown): void =>
+    this.state.setNum(campo, valor);
+  readonly setText = (campo: keyof MuebleInput, event: Event): void =>
+    this.state.setText(campo, event);
+  readonly incrementar = (campo: CampoCantidad): void => this.state.incrementar(campo);
+  readonly decrementar = (campo: CampoCantidad): void => this.state.decrementar(campo);
+  readonly setTechoInclinado = (tipo: string): void => this.state.setTechoInclinado(tipo);
+  readonly setColor = (nombre: string): void => this.state.setColor(nombre);
+  readonly setTipoPuerta = (id: number): void => this.state.setTipoPuerta(id);
+  readonly validarDimensiones = (): boolean => this.state.validarDimensiones();
+  readonly predecir = (): void => this.state.predecir();
+  readonly confirmar = (): void => this.state.confirmar();
+  readonly nueva = (): void => this.state.reiniciar();
 
-  // ============ CICLO DE VIDA ============
   ngOnInit(): void {
-    this.cargarClientes();
-    this.cargarCatalogos();
+    this.state.inicializar();
   }
 
-  cargarClientes(): void {
-    this.clienteService.listar().subscribe(data => this.clientes.set(data));
-  }
-
-  cargarCatalogos(): void {
-    this.catalogoService.getCategorias().subscribe((data: any[]) => {
-      this.categorias.set(data);
-      if (data.length > 0 && this.form().idCategoriaProducto === 0) {
-        this.form.update(f => ({ ...f, idCategoriaProducto: this.getId(data[0]) }));
-      }
-    });
-
-    this.catalogoService.getBases().subscribe((data: any[]) => {
-      this.bases.set(data);
-      if (data.length > 0 && this.form().idBase === 0) {
-        this.form.update(f => ({ ...f, idBase: this.getId(data[0]) }));
-      }
-    });
-
-    this.catalogoService.getCerraduras().subscribe((data: any[]) => {
-      this.cerraduras.set(data);
-      if (data.length > 0 && this.form().idCerradura === 0) {
-        this.form.update(f => ({ ...f, idCerradura: this.getId(data[0]) }));
-      }
-    });
-
-    this.catalogoService.getTiposPuerta().subscribe((data: any[]) => {
-      this.tiposPuerta.set(data);
-      if (data.length > 0 && this.form().idTipoPuerta === 0) {
-        this.form.update(f => ({ ...f, idTipoPuerta: this.getId(data[0]) }));
-      }
-    });
-
-    this.catalogoService.getEspesores().subscribe((data: any[]) => {
-      this.espesores.set(data);
-      if (data.length > 0 && this.form().idEspesor === 0) {
-        this.form.update(f => ({ ...f, idEspesor: this.getId(data[0]) }));
-      }
-    });
-  }
-
-  // ============ HELPERS PARA CATÁLOGOS ============
-  getId(obj: any): number {
-    if (!obj) return 0;
-    if (typeof obj === 'number') return obj;
-    const keys = Object.keys(obj);
-    const idKey = keys.find(k => k.toLowerCase().startsWith('id') && typeof obj[k] === 'number');
-    return idKey ? obj[idKey] : 0;
-  }
-
-  setId(campo: keyof MuebleInput, valor: number) {
-    this.form.update(f => ({ ...f, [campo]: valor }));
-    this.prediccion.set(null);
-  }
-
-  // ============ NAVEGACIÓN ============
-  siguiente(): void {
-    if (this.paso() === 1 && !this.clienteSeleccionado()) {
-      this.error.set('Por favor, selecciona un cliente para continuar.');
-      return;
-    }
-    if (this.paso() === 2 && !this.prediccion()) {
-      this.predecir();
-    }
-    this.paso.update(p => Math.min(p + 1, 4));
-  }
-
-  anterior(): void { this.paso.update(p => Math.max(p - 1, 1)); }
-  irA(n: number): void { if (n < this.paso()) this.paso.set(n); }
-
-  // ============ PASO 1 LÓGICA ============
-  buscarCliente(event: Event) {
-    this.busquedaCliente.set((event.target as HTMLInputElement).value);
-    this.mostrarListaClientes.set(true);
-  }
-  seleccionarCliente(c: Cliente) {
-    this.clienteSeleccionado.set(c);
-    this.busquedaCliente.set(c.razonSocial);
-    this.mostrarListaClientes.set(false);
-  }
-  iniciales(nombre: string | null | undefined): string {
-    if (!nombre) return '?';
-    return nombre.trim().split(/\s+/).slice(0, 2).map(p => p.charAt(0).toUpperCase()).join('');
-  }
-  limpiarCliente() { this.clienteSeleccionado.set(null); this.busquedaCliente.set(''); }
-
-  // ============ PASO 2 LÓGICA ============
-  
-  // MÉTODO UNIFICADO PARA NÚMEROS (Acepta Eventos y Valores directos de ngModel)
-  setNum(campo: keyof MuebleInput, eventOrValue: any) {
-    let valor: number;
-    if (eventOrValue instanceof Event) {
-      valor = Number((eventOrValue.target as HTMLInputElement).value);
-    } else {
-      valor = Number(eventOrValue);
-    }
-    this.form.update(f => ({ ...f, [campo]: valor }));
-    this.prediccion.set(null);
-  }
-
-  setText(campo: keyof MuebleInput, event: Event) {
-    const valor = (event.target as HTMLInputElement).value;
-    this.form.update(f => ({ ...f, [campo]: valor }));
-    this.prediccion.set(null);
-  }
-
-  incrementar(campo: 'cantidad' | 'cantidadPuertas' | 'cantidadBandejas' | 'cantidadCasilleros') {
-    if (campo === 'cantidadPuertas' && this.isSinPuerta()) return;
-    if (campo === 'cantidadCasilleros' && !this.isSinPuerta()) return;
-    
-    const minVal = campo === 'cantidad' ? 1 : (campo === 'cantidadPuertas' || campo === 'cantidadCasilleros' ? 1 : 0);
-    this.form.update(f => ({ ...f, [campo]: (f[campo] as number || minVal) + 1 }));
-    this.prediccion.set(null);
-  }
-  decrementar(campo: 'cantidad' | 'cantidadPuertas' | 'cantidadBandejas' | 'cantidadCasilleros') {
-    if (campo === 'cantidadPuertas' && this.isSinPuerta()) return;
-    if (campo === 'cantidadCasilleros' && !this.isSinPuerta()) return;
-
-    const minVal = campo === 'cantidad' ? 1 : (campo === 'cantidadPuertas' || campo === 'cantidadCasilleros' ? 1 : 0);
-    this.form.update(f => ({ ...f, [campo]: Math.max(minVal, (f[campo] as number || 0) - 1) }));
-    this.prediccion.set(null);
-  }
-
-  setTechoInclinado(tipo: string) {
-    this.techoInclinadoSel.set(tipo);
-    this.form.update(f => ({ ...f, techoInclinado: tipo === 'Con techo inclinado' }));
-    this.prediccion.set(null);
-  }
-
-  setColor(nombre: string) {
-    this.colorSeleccionado.set(nombre);
-    this.form.update(f => ({ ...f, idColor: 1 })); 
-  }
-
-  // ============ LÓGICA TIPO DE PUERTA ============
-  
-  readonly isSinPuerta = computed(() => {
-    const id = this.form().idTipoPuerta;
-    const tipo = this.tiposPuerta().find((t: any) => this.getId(t) === id);
-    return tipo ? tipo.nombre.toLowerCase().includes('sin puerta') : false;
-  });
-  readonly cantidadPuertasActual = computed(() => {
-    if (this.isSinPuerta()) return 0;
-    const val = this.form().cantidadPuertas ?? 1;
-    return Math.max(1, val); 
-  });
-  setTipoPuerta(id: number) {
-    this.form.update(f => {
-      const tipo = this.tiposPuerta().find((t: any) => this.getId(t) === id);
-      const esSinPuerta = tipo ? tipo.nombre.toLowerCase().includes('sin puerta') : false;
-      
-      return {
-        ...f,
-        idTipoPuerta: id,
-        cantidadPuertas: esSinPuerta ? 0 : (f.cantidadPuertas === 0 ? 1 : f.cantidadPuertas),
-        cantidadCasilleros: esSinPuerta ? (f.cantidadCasilleros === 0 ? 1 : f.cantidadCasilleros) : 0
-
-      };
-    });
-    this.prediccion.set(null); 
-  }
-  readonly cantidadCasillerosActual = computed(() => {
-    if (!this.isSinPuerta()) return 0;
-    const val = this.form().cantidadCasilleros ?? 1;
-    return Math.max(1, val); 
-  });
-  // ============ HELPERS PARA EL HTML ============
-  readonly cantidad = computed(() => this.form().cantidad || 1);
-  readonly altoCm = computed(() => this.form().alto);
-  readonly anchoCm = computed(() => this.form().ancho);
-  readonly fondoCm = computed(() => this.form().fondo);
-  readonly colorActualHex = computed(() => this.colores.find(x => x.nombre === this.colorSeleccionado())?.hex || '#ffffff');
-  
-  readonly tipoCerradura = computed(() => {
-    const id = this.form().idCerradura;
-    return this.cerraduras().find((c: any) => this.getId(c) === id)?.nombre || '—';
-  });
-
-  readonly categoriaSeleccionada = computed(() => {
-    const id = this.form().idCategoriaProducto;
-    return this.categorias().find((c: any) => this.getId(c) === id)?.nombre || '—';
-  });
-
-  readonly espesorSeleccionado = computed(() => {
-    const id = this.form().idEspesor;
-    const esp = this.espesores().find((e: any) => this.getId(e) === id);
-    return esp ? `${esp.milimetros} mm` : '—';
-  });
-
-  readonly zocaloOPatas = computed(() => {
-    const id = this.form().idBase;
-    return this.bases().find((b: any) => this.getId(b) === id)?.nombre || '—';
-  });
-
-  readonly tipoPuerta = computed(() => {
-    const id = this.form().idTipoPuerta;
-    return this.tiposPuerta().find((t: any) => this.getId(t) === id)?.nombre || '—';
-  });
-
-  // ============ ML Y CÁLCULOS ============
-  readonly prediccion = signal<PrediccionResponse | null>(null);
-  readonly confirmada = signal<CotizacionConfirmada | null>(null);
-  readonly cargando = signal(false);
-  readonly error = signal<string | null>(null);
-
-  readonly costoUnitario = computed(() => this.prediccion()?.costoFabricacionUnitario ?? 0);
-  
-  readonly markupActual = computed(() => {
-    const q = this.cantidad();
-    if (q <= 5) return 3.5;
-    if (q <= 10) return 3.0;
-    return 2.5;
-  });
-
-  readonly etiquetaMarkup = computed(() => {
-    const q = this.cantidad();
-    if (q <= 5) return '(de 1 a 5 unidades)';
-    if (q <= 10) return '(de 6 a 10 unidades)';
-    return '(más de 10 unidades)';
-  });
-
-  readonly precioUnitario = computed(() => this.costoUnitario() * this.markupActual());
-  readonly precioSugeridoTotal = computed(() => this.precioUnitario() * this.cantidad());
-  readonly aplicaDescuento = computed(() => this.cantidad() > 10);
-
-  predecir(): void {
-    const f = this.form();
-    
-    const payload: MuebleInput = {
-      ...f,
-      idCategoriaProducto: f.idCategoriaProducto || this.getId(this.categorias()[0]),
-      idBase: f.idBase || this.getId(this.bases()[0]),
-      idCerradura: f.idCerradura || this.getId(this.cerraduras()[0]),
-      idTipoPuerta: f.idTipoPuerta || this.getId(this.tiposPuerta()[0]),
-      idEspesor: f.idEspesor || this.getId(this.espesores()[0]),
-    };
-
-    if (!payload.idCategoriaProducto || !payload.idBase || !payload.idCerradura || !payload.idTipoPuerta || !payload.idEspesor) {
-      this.error.set('Error: Faltan datos en los catálogos. Revisa la consola.');
-      return; 
-    }
-
-    this.cargando.set(true);
-    this.error.set(null);
-
-    this.cotizacionService.predecir(payload).subscribe({
-      next: (res) => {
-        this.prediccion.set(res);
-        this.cargando.set(false);
-      },
-      error: (err) => {
-        this.error.set('Error al predecir: ' + (err?.error?.message ?? err.message));
-        this.cargando.set(false);
-      },
-    });
-  }
-
-  confirmar(): void {
-    if (!this.clienteSeleccionado()) {
-      this.error.set('Debe seleccionar un cliente.');
-      return;
-    }
-    this.cargando.set(true);
-    this.error.set(null);
-
-    const esSinPuerta = this.isSinPuerta();
-
-    const payload: any = {
-      ...this.form(),
-      cantidad: this.cantidad(),
-      techoInclinado: this.form().techoInclinado ? 1 : 0,
-      cantidadPuertas: esSinPuerta ? 0 : (this.form().cantidadPuertas || 1),
-      cantidadCasilleros: esSinPuerta ? (this.form().cantidadCasilleros || 1) : 0
-    };
-
-    const idCliente = this.clienteSeleccionado()!.idCliente;
-
-    this.cotizacionService.confirmar(payload, idCliente).subscribe({
-      next: (res: any) => {
-        this.confirmada.set(res);
-        this.prediccion.set(res.prediccion || this.prediccion());
-        this.cargando.set(false);
-        this.paso.set(4);
-      },
-      error: (err) => {
-        this.error.set('Error al guardar: ' + (err?.error?.message ?? err.message));
-        this.cargando.set(false);
-      },
-    });
-  }
-
-  irAlListado(): void { this.router.navigate(['/cotizaciones']); }
-
-  nueva(): void {
-    this.form.set({
-      idCategoriaProducto: 0, 
-      codigoFamilia: '', 
-      idBase: 0, idCerradura: 0, idTipoPuerta: 0, idEspesor: 0,
-      alto: 180, ancho: 90, fondo: 50, cantidad: 1, cantidadPuertas: 1, cantidadCasilleros: 1, cantidadBandejas: 0,
-      techoInclinado: false, divisiones: 1
-    });
-    this.colorSeleccionado.set('Gris Eco');
-    this.techoInclinadoSel.set('Sin techo inclinado');
-    this.clienteSeleccionado.set(null);
-    this.busquedaCliente.set('');
-    this.prediccion.set(null);
-    this.confirmada.set(null);
-    this.error.set(null);
-    this.paso.set(1);
-    this.cargarCatalogos();
+  irAlListado(): void {
+    this.router.navigate(['/cotizaciones']);
   }
 }

@@ -2,9 +2,11 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../../../core/services/auth.service';
 import { ClienteService } from '../../services/cliente';
 import { ConfirmService } from '../../../../shared/services/confirm.service';
 import { ToastService } from '../../../../shared/services/toast.service';
+import { iniciales } from '../../../../shared/utils/estado.utils';
 import { Cliente } from '../../models/cliente.model';
 
 type EstadoFiltro = 'todos' | 'activos' | 'inactivos';
@@ -20,12 +22,15 @@ export class ListaClientes implements OnInit {
   private readonly clienteService = inject(ClienteService);
   private readonly confirm = inject(ConfirmService);
   private readonly toast = inject(ToastService);
+  private readonly auth = inject(AuthService);
+
+  readonly esAdmin = this.auth.isAdmin;
 
   readonly clientes = signal<Cliente[]>([]);
   readonly cargando = signal(true);
   readonly errorMsg = signal<string | null>(null);
   readonly filtro = signal<string>('');
-  readonly estadoFiltro = signal<EstadoFiltro>('todos');
+  readonly estadoFiltro = signal<EstadoFiltro>(this.esAdmin() ? 'todos' : 'activos');
 
   readonly paginaActual = signal(1);
   readonly tamanoPagina = signal(10);
@@ -52,8 +57,8 @@ export class ListaClientes implements OnInit {
 
   // ============ KPIs ============
   readonly totalClientes = computed(() => this.clientes().length);
-  readonly totalActivos = computed(() => this.clientes().filter(c => c.estado).length);
-  readonly totalInactivos = computed(() => this.clientes().filter(c => !c.estado).length);
+  readonly totalActivos = computed(() => this.clientes().filter((c) => c.estado).length);
+  readonly totalInactivos = computed(() => this.clientes().filter((c) => !c.estado).length);
 
   // ============ Filtros ============
   onFiltro(event: Event): void {
@@ -62,25 +67,36 @@ export class ListaClientes implements OnInit {
   }
 
   onEstadoChange(event: Event): void {
-    this.estadoFiltro.set((event.target as HTMLSelectElement).value as EstadoFiltro);
+    const select = event.target as HTMLSelectElement;
+    const valor = select.value as EstadoFiltro;
+    // El asesor solo ve activos, aunque manipule el select.
+    if (!this.esAdmin() && valor !== 'activos') {
+      select.value = 'activos';
+      this.estadoFiltro.set('activos');
+      this.paginaActual.set(1);
+      return;
+    }
+    this.estadoFiltro.set(valor);
     this.paginaActual.set(1);
   }
 
   readonly filtrados = computed(() => {
     let lista = this.clientes();
     const q = this.filtro();
-    const ef = this.estadoFiltro();
+    // El asesor no tiene selector de estado: siempre se filtra por activos.
+    const ef: EstadoFiltro = this.esAdmin() ? this.estadoFiltro() : 'activos';
 
-    if (ef === 'activos') lista = lista.filter(c => c.estado);
-    if (ef === 'inactivos') lista = lista.filter(c => !c.estado);
+    if (ef === 'activos') lista = lista.filter((c) => c.estado);
+    if (ef === 'inactivos') lista = lista.filter((c) => !c.estado);
 
     if (!q) return lista;
 
-    return lista.filter(c =>
-      c.razonSocial?.toLowerCase().includes(q) ||
-      c.rut?.toLowerCase().includes(q) ||
-      c.correo?.toLowerCase().includes(q) ||
-      c.ciudad?.toLowerCase().includes(q)
+    return lista.filter(
+      (c) =>
+        c.razonSocial?.toLowerCase().includes(q) ||
+        c.rut?.toLowerCase().includes(q) ||
+        c.correo?.toLowerCase().includes(q) ||
+        c.ciudad?.toLowerCase().includes(q),
     );
   });
 
@@ -144,11 +160,7 @@ export class ListaClientes implements OnInit {
   }
 
   // ============ Helpers ============
-  iniciales(razonSocial: string): string {
-    if (!razonSocial) return '?';
-    const palabras = razonSocial.trim().split(/\s+/).slice(0, 2);
-    return palabras.map(p => p.charAt(0).toUpperCase()).join('');
-  }
+  readonly iniciales = iniciales;
 
   // ============ Eliminar ============
   async eliminar(cliente: Cliente): Promise<void> {

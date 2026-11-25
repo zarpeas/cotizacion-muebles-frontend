@@ -1,42 +1,69 @@
-/* src/app/core/layout/sidebar/sidebar.css */
 
 :host {
   display: block;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  flex: 0 0 240px;
+  width: 240px;
   height: 100vh;
+  height: 100dvh;
 }
 
 .sidebar {
   width: 240px;
   height: 100vh;
-  background: #0F0F14;
+  height: 100dvh;
+  background: #0f0f14;
+  color: #fff;
   display: flex;
   flex-direction: column;
-  padding: 0;
+  padding: 24px 0;
   position: sticky;
   top: 0;
+  box-sizing: border-box;
   box-shadow: 1px 0 0 rgba(255, 255, 255, 0.04);
+  transition:
+    width 0.2s ease,
+    flex-basis 0.2s ease;
 }
 
-/* ============ BRAND ============ */
 .brand {
-  padding: 24px 20px 28px;
+  padding: 0 24px 28px;
   display: flex;
   align-items: center;
+  min-height: 34px;
 }
 
-.brand-logo {
-  height: 26px;
-  width: auto;
-  filter: brightness(0) invert(1);
+.brand-text {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  line-height: 1.15;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  white-space: nowrap;
+}
+.brand-movi {
+  color: #fff;
+}
+.brand-lockers {
+  color: #c8102e;
 }
 
-/* Fallback cuando no hay imagen: texto */
 .brand::after {
-  content: 'MOVILOCKERS';
+  content: 'M';
   display: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: #c8102e;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 900;
+  align-items: center;
+  justify-content: center;
 }
 
-/* ============ NAV ============ */
 .nav {
   flex: 1;
   display: flex;
@@ -44,6 +71,7 @@
   gap: 2px;
   padding: 0 12px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .nav-item {
@@ -75,19 +103,19 @@
   color: #fff;
 }
 
-/* Estado activo — rojo corporativo */
 .nav-item.active {
   background: #c8102e;
   color: #fff;
   font-weight: 600;
-  box-shadow: -4px 0 12px rgba(200, 16, 46, 0.4), 0 4px 14px rgba(200, 16, 46, 0.35);
+  box-shadow:
+    -4px 0 12px rgba(200, 16, 46, 0.4),
+    0 4px 14px rgba(200, 16, 46, 0.35);
 }
 
 .nav-item.active svg {
   stroke: #fff;
 }
 
-/* ============ FOOTER ============ */
 .sidebar-footer {
   padding: 16px 12px 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -119,125 +147,44 @@
   color: #fff;
 }
 
-/* ============ RESPONSIVE ============ */
 @media (max-width: 768px) {
+  :host {
+    flex-basis: 68px;
+    width: 68px;
+  }
+
   .sidebar {
-    width: 70px;
+    width: 68px;
+    padding: 20px 0;
   }
 
   .brand {
-    padding: 20px 16px;
     justify-content: center;
+    padding: 0 0 24px;
   }
 
-  .brand-logo {
-    height: 20px;
+  .brand-text,
+  .nav-item span,
+  .logout span {
+    display: none;
+  }
+
+  .brand::after {
+    display: flex;
+  }
+
+  .nav {
+    padding: 0 8px;
   }
 
   .nav-item {
     justify-content: center;
     padding: 12px;
-  }
-
-  .nav-item span,
-  .nav-item:not(:has(svg)) {
-    display: none;
+    border-left-color: transparent;
   }
 
   .logout {
     justify-content: center;
+    padding: 12px;
   }
 }
-
-/*logo*/
-.brand-text {
-  font-size: 22px;
-  font-weight: 900;
-  letter-spacing: 1px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-.brand-movi {
-  color: #fff;
-}
-.brand-lockers {
-  color: #c8102e;
-}
-
-/* Contenedor del sidebar */
-.sidebar {
-  width: 240px;
-  background: #0f0f14;
-  color: #fff;
-  padding: 24px 0;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  position: sticky;
-  top: 0;
-}
-
-/* Logo */
-.logo {
-  padding: 0 24px 32px;
-  font-size: 22px;
-  font-weight: 900;
-  letter-spacing: 1px;
-}
-.logo span { color: #c8102e; }
-
-/* Menú */
-.menu {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 0 12px;
-}
-
-/* Item del menú */
-.menu-item {
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: #b0b0b8;
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.menu-item:hover {
-  background: #1a1a24;
-  color: #fff;
-}
-
-/* Estado activo (cuando estás en esa ruta) */
-.menu-item.active {
-  background: #c8102e;
-  color: #fff;
-  box-shadow: 0 6px 16px rgba(200, 16, 46, 0.35);
-}
-
-/* Íconos dentro del menú */
-.menu-item svg {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-}
-
-/* Footer (Cerrar sesión) */
-.logout {
-  padding: 16px 24px;
-  border-top: 1px solid #1a1a24;
-  color: #888;
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-.logout:hover { color: #fff; }

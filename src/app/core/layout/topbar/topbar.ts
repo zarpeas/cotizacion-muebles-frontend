@@ -6,7 +6,7 @@ import { AuthService } from '../../services/auth.service';
   standalone: true,
   imports: [],
   templateUrl: './topbar.html',
-  styleUrl: './topbar.css'
+  styleUrl: './topbar.css',
 })
 export class Topbar {
   private auth = inject(AuthService);

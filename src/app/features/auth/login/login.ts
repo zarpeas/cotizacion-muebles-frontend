@@ -4,13 +4,15 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { ToastContainer } from '../../../shared/components/toast/toast';
+import { LoginRequest } from '../../../core/models/login-request.model';
+import { mensajeError } from '../../../shared/utils/error.utils';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [ReactiveFormsModule, ToastContainer],
   templateUrl: './login.html',
-  styleUrl: './login.css'
+  styleUrl: './login.css',
 })
 export class Login {
   private fb = inject(FormBuilder);
@@ -22,7 +24,7 @@ export class Login {
 
   form = this.fb.group({
     username: ['', Validators.required],
-    password: ['', Validators.required]
+    password: ['', Validators.required],
   });
 
   onSubmit(): void {
@@ -33,20 +35,22 @@ export class Login {
 
     this.loading.set(true);
 
-    this.auth.login(this.form.getRawValue() as any).subscribe({
+    const raw = this.form.getRawValue();
+    const credentials: LoginRequest = {
+      username: raw.username ?? '',
+      password: raw.password ?? '',
+    };
+
+    this.auth.login(credentials).subscribe({
       next: () => {
         this.loading.set(false);
         this.toast.success('¡Bienvenido!');
         setTimeout(() => this.router.navigate(['/dashboard']), 500);
       },
-      error: (err) => {
+      error: (err: unknown) => {
         this.loading.set(false);
-        const msg =
-          err?.error?.message ||
-          (typeof err?.error === 'string' ? err.error : null) ||
-          'Usuario o contraseña incorrectos';
-        this.toast.error(msg);
-      }
+        this.toast.error(mensajeError(err, 'Usuario o contraseña incorrectos'));
+      },
     });
   }
 }

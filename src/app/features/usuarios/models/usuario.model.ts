@@ -10,3 +10,6 @@ export interface Usuario {
   fechaCreacion?: string;
   fechaEntrada?: string;
 }
+
+/** Datos enviados al crear/actualizar; el backend genera id y fechas. */
+export type UsuarioPayload = Omit<Usuario, 'idUsuario' | 'fechaCreacion' | 'fechaEntrada'>;

@@ -24,7 +24,7 @@
     <div class="page-header">
       <div class="title-area">
         <h1>{{ c.numeroCotizacion }}</h1>
-        <span class="badge" [ngClass]="estadoClass(c.estado)">{{ c.estado }}</span>
+        <span class="badge" [ngClass]="estadoClass(c.estado)">{{ formatoEstado(c.estado) }}</span>
       </div>
       <div class="fecha-area">
         <span>Fecha de emisión</span>
@@ -128,7 +128,7 @@
             <div class="fin-row">
               <span class="label">Costo de fabricación unitario</span>
               <span class="value">{{
-                c.costoFabricacion | currency: 'CLP' : 'symbol-narrow' : '1.0-0'
+                c.costoFabricacion | currency: 'CLP' : 'symbol-narrow' : '1.0-0' : 'es-CL'
               }}</span>
             </div>
             <div class="fin-row">
@@ -149,7 +149,7 @@
             <div class="fin-row total-destacado">
               <span class="label">Precio de venta sugerido</span>
               <span class="value">{{
-                c.precioVentaSugerido | currency: 'CLP' : 'symbol-narrow' : '1.0-0'
+                c.precioVentaSugerido | currency: 'CLP' : 'symbol-narrow' : '1.0-0' : 'es-CL'
               }}</span>
             </div>
           </div>
@@ -174,7 +174,11 @@
         <div class="acciones-footer">
           @if (c.estado?.toLowerCase() === 'pendiente') {
             @if (puedeEditarEstimacion()) {
-              <button type="button" class="btn btn-editar" (click)="abrirEdicionEstimacion()">
+              <button
+                type="button"
+                class="btn btn-secondary btn-editar"
+                (click)="abrirEdicionEstimacion()"
+              >
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
@@ -204,24 +208,6 @@
             </button>
             <button type="button" class="btn btn-peligro" (click)="abrirModalCancelar()">
               Rechazar Cotización
-            </button>
-          }
-
-          @if (c.estado?.toLowerCase() === 'aceptada') {
-            <button type="button" class="btn btn-primary" (click)="generarPDF()">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
-              Generar PDF
             </button>
           }
         </div>
@@ -314,7 +300,7 @@
           <div class="fin-row total-destacado">
             <span class="label">Nuevo precio de venta sugerido</span>
             <span class="value">{{
-              precioCalculado() ?? 0 | currency: 'CLP' : 'symbol-narrow' : '1.0-0'
+              precioCalculado() ?? 0 | currency: 'CLP' : 'symbol-narrow' : '1.0-0' : 'es-CL'
             }}</span>
           </div>
         </div>

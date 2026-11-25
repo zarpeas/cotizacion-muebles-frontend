@@ -1,6 +1,8 @@
 /* src/app/features/cotizaciones/pages/lista-cotizaciones/lista-cotizaciones.css */
 
-:host { display: block; }
+:host {
+  display: block;
+}
 
 .cotizaciones-page {
   padding: 28px 32px;
@@ -23,7 +25,11 @@
   letter-spacing: -0.3px;
   color: #1a1a2e;
 }
-.page-header p { color: #666; font-size: 14px; margin: 0; }
+.page-header p {
+  color: #666;
+  font-size: 14px;
+  margin: 0;
+}
 
 .btn {
   padding: 11px 22px;
@@ -39,8 +45,14 @@
   gap: 8px;
   transition: all 0.2s;
 }
-.btn svg { width: 16px; height: 16px; }
-.btn-primary { background: #c8102e; color: #fff; }
+.btn svg {
+  width: 16px;
+  height: 16px;
+}
+.btn-primary {
+  background: #c8102e;
+  color: #fff;
+}
 .btn-primary:hover {
   background: #a50d26;
   transform: translateY(-1px);
@@ -54,8 +66,16 @@
   gap: 16px;
   margin-bottom: 20px;
 }
-@media (max-width: 1100px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 600px) { .kpis { grid-template-columns: 1fr; } }
+@media (max-width: 1100px) {
+  .kpis {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .kpis {
+    grid-template-columns: 1fr;
+  }
+}
 
 .kpi {
   background: #fff;
@@ -66,7 +86,9 @@
   align-items: center;
   gap: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 .kpi:hover {
   transform: translateY(-2px);
@@ -82,14 +104,32 @@
   justify-content: center;
   flex-shrink: 0;
 }
-.kpi-icon svg { width: 22px; height: 22px; }
+.kpi-icon svg {
+  width: 22px;
+  height: 22px;
+}
 
-.kpi-icon-total { background: #fdf2f4; color: #c8102e; }
-.kpi-icon-aprobadas { background: #e6f7ee; color: #1a7f4f; }
-.kpi-icon-pendientes { background: #fff4e6; color: #c67700; }
-.kpi-icon-canceladas { background: #fee; color: #c33; }
+.kpi-icon-total {
+  background: #fdf2f4;
+  color: #c8102e;
+}
+.kpi-icon-aprobadas {
+  background: #e6f7ee;
+  color: #1a7f4f;
+}
+.kpi-icon-pendientes {
+  background: #fff4e6;
+  color: #c67700;
+}
+.kpi-icon-canceladas {
+  background: #fee;
+  color: #c33;
+}
 
-.kpi-info { display: flex; flex-direction: column; }
+.kpi-info {
+  display: flex;
+  flex-direction: column;
+}
 .kpi-value {
   font-size: 26px;
   font-weight: 800;
@@ -121,7 +161,16 @@
   border-bottom: 1px solid #f0f0f0;
   flex-wrap: wrap;
 }
-@media (max-width: 700px) { .filtros { flex-direction: column; } }
+@media (max-width: 700px) {
+  .filtros {
+    flex-direction: column;
+  }
+  .search,
+  .filter-select {
+    min-width: 0;
+    width: 100%;
+  }
+}
 
 .search {
   flex: 1;
@@ -174,21 +223,32 @@
 }
 
 /* ============ TABLA ============ */
+.tabla-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 16px 16px;
+}
 .tabla {
   width: 100%;
-  border-collapse: collapse;
+  min-width: 880px;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 14px;
 }
-.tabla thead { background: #fafbfc; }
 .tabla th {
   text-align: left;
-  padding: 13px 20px;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #888;
-  font-weight: 700;
-  border-bottom: 1px solid #ebecef;
+  background-color: #f8f9fa;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 14px 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.tabla th:first-child {
+  border-radius: 8px 0 0 8px;
+}
+.tabla th:last-child {
+  border-radius: 0 8px 8px 0;
 }
 .tabla td {
   padding: 14px 20px;
@@ -196,14 +256,28 @@
   color: #333;
   vertical-align: middle;
 }
-.tabla tbody tr { transition: background 0.15s; }
-.tabla tbody tr:hover { background: #fdf8f9; }
-.tabla tbody tr:last-child td { border-bottom: none; }
+.tabla tbody tr {
+  transition: background 0.15s;
+}
+.tabla tbody tr:hover {
+  background: #fdf8f9;
+}
+.tabla tbody tr:last-child td {
+  border-bottom: none;
+}
 
-.num { text-align: right; }
-.negrita { font-weight: 700; color: #1a1a2e; }
+.num {
+  text-align: right;
+}
+.negrita {
+  font-weight: 700;
+  color: #1a1a2e;
+}
 
-.fecha-cell { color: #666; font-size: 13px; }
+.fecha-cell {
+  color: #666;
+  font-size: 13px;
+}
 
 /* Link N° cotización */
 .link-cot {
@@ -212,10 +286,17 @@
   text-decoration: none;
   font-size: 14px;
 }
-.link-cot:hover { color: #c8102e; text-decoration: underline; }
+.link-cot:hover {
+  color: #c8102e;
+  text-decoration: underline;
+}
 
 /* Cliente cell */
-.cliente-cell { display: flex; align-items: center; gap: 12px; }
+.cliente-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 .cliente-avatar {
   width: 36px;
   height: 36px;
@@ -236,18 +317,6 @@
   font-size: 14px;
 }
 
-/* Familia */
-.familia-tag {
-  display: inline-block;
-  padding: 4px 12px;
-  background: #eef2ff;
-  color: #4a5fd5;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-}
-
 /* Badges */
 .badge {
   display: inline-flex;
@@ -257,7 +326,7 @@
   border-radius: 20px;
   font-size: 11px;
   font-weight: 700;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.3px;
 }
 .badge::before {
@@ -267,14 +336,31 @@
   border-radius: 50%;
   background: currentColor;
 }
-.badge-pendiente { background: #fff4e6; color: #c67700; }
-.badge-aceptada  { background: #e6f7ee; color: #1a7f4f; }
-.badge-rechazada { background: #fee; color: #c33; }
-.badge-cancelada { background: #f0f0f0; color: #666; }
-.badge-default   { background: #eef2ff; color: #4a5fd5; }
+.badge-pendiente {
+  background: #fff4e6;
+  color: #c67700;
+}
+.badge-aceptada {
+  background: #e6f7ee;
+  color: #1a7f4f;
+}
+.badge-rechazada {
+  background: #fee;
+  color: #c33;
+}
+.badge-cancelada {
+  background: #f0f0f0;
+  color: #666;
+}
+.badge-default {
+  background: #eef2ff;
+  color: #4a5fd5;
+}
 
 /* Acciones */
-.acciones-th { text-align: right; }
+.acciones-th {
+  text-align: right;
+}
 .acciones-td {
   text-align: right;
   white-space: nowrap;
@@ -296,7 +382,10 @@
   font-family: inherit;
   padding: 0;
 }
-.action-btn svg { width: 15px; height: 15px; }
+.action-btn svg {
+  width: 15px;
+  height: 15px;
+}
 .action-btn:hover {
   background: #f5f5f5;
   border-color: #c8102e;
@@ -318,10 +407,20 @@
   flex-wrap: wrap;
   gap: 12px;
 }
-.showing { font-size: 13px; color: #666; }
-.showing strong { color: #1a1a2e; font-weight: 700; }
+.showing {
+  font-size: 13px;
+  color: #666;
+}
+.showing strong {
+  color: #1a1a2e;
+  font-weight: 700;
+}
 
-.pagination { display: flex; align-items: center; gap: 4px; }
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
 .page-btn {
   min-width: 34px;
   height: 34px;
@@ -339,7 +438,10 @@
   align-items: center;
   justify-content: center;
 }
-.page-btn svg { width: 14px; height: 14px; }
+.page-btn svg {
+  width: 14px;
+  height: 14px;
+}
 .page-btn:hover:not(:disabled):not(.active) {
   border-color: #c8102e;
   color: #c8102e;
@@ -349,7 +451,10 @@
   color: #fff;
   border-color: #c8102e;
 }
-.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 .page-ellipsis {
   padding: 0 6px;
@@ -380,7 +485,10 @@
 /* ============ MODAL ============ */
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
@@ -400,8 +508,14 @@
 }
 
 @keyframes modalIn {
-  from { opacity: 0; transform: translateY(20px) scale(0.95); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal-header {
@@ -427,7 +541,9 @@
   transition: color 0.2s;
 }
 
-.close-btn:hover { color: #c8102e; }
+.close-btn:hover {
+  color: #c8102e;
+}
 
 .modal-body {
   padding: 24px;
@@ -466,7 +582,7 @@
 .modal-body textarea:focus {
   outline: none;
   border-color: #c8102e;
-  box-shadow: 0 0 0 3px rgba(200,16,46,.14);
+  box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.14);
 }
 
 .modal-footer {
@@ -483,5 +599,10 @@
   color: #fff;
   border: none;
 }
-.btn-peligro:hover:not(:disabled) { background: #a50d26; }
-.btn-peligro:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-peligro:hover:not(:disabled) {
+  background: #a50d26;
+}
+.btn-peligro:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -1,13 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
-import { Usuario } from '../models/usuario.model';
+import { Usuario, UsuarioPayload } from '../models/usuario.model';
+import { API_BASE_URL } from '../../../core/config/api.config';
 
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
   private readonly http = inject(HttpClient);
-  // 👇 URL completa con el puerto de Spring Boot
-  private readonly apiUrl = 'http://localhost:8080/api/usuarios';
+  private readonly apiBase = inject(API_BASE_URL);
+  private readonly apiUrl = `${this.apiBase}/api/usuarios`;
 
   listar(): Observable<Usuario[]> {
     return this.http.get<Usuario[]>(this.apiUrl);
@@ -24,11 +25,11 @@ export class UsuarioService {
     );
   }
 
-  crear(usuario: Usuario): Observable<Usuario> {
+  crear(usuario: UsuarioPayload): Observable<Usuario> {
     return this.http.post<Usuario>(this.apiUrl, usuario);
   }
 
-  actualizar(id: number, usuario: Usuario): Observable<Usuario> {
+  actualizar(id: number, usuario: Partial<UsuarioPayload>): Observable<Usuario> {
     return this.http.put<Usuario>(`${this.apiUrl}/${id}`, usuario);
   }
 

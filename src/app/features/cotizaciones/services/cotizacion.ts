@@ -1,8 +1,10 @@
 import { inject, Service } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
+import { API_BASE_URL } from '../../../core/config/api.config';
 import {
   MuebleInput,
+  MuebleConfirmacionInput,
   PrediccionResponse,
   CotizacionConfirmada,
   CotizacionResumen,
@@ -13,18 +15,17 @@ import {
 @Service()
 export class CotizacionService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = '/api/cotizacion';
+  private readonly apiBase = inject(API_BASE_URL);
+  private readonly apiUrl = `${this.apiBase}/api/cotizacion`;
 
   /** Lista todas las cotizaciones guardadas. */
   listar(): Observable<CotizacionResumen[]> {
-    // Pedimos una página grande para traer todo y mantener tu filtrado local (client-side)
+    // Pedimos una página grande para traer todo y mantener el filtrado local.
     const params = new HttpParams().set('page', '0').set('size', '1000');
 
     return this.http
       .get<PaginatedResponse<CotizacionResumen>>(`${this.apiUrl}/listar`, { params })
-      .pipe(
-        map((response) => response.content), // Extraemos solo el arreglo de datos
-      );
+      .pipe(map((response) => response.content));
   }
 
   /** Solo predice, sin guardar en BD. */
@@ -33,10 +34,13 @@ export class CotizacionService {
   }
 
   /** Predice y guarda cotización + features + predicción en BD. */
-  confirmar(input: any, idCliente: number): Observable<any> {
-    const params = new HttpParams().set('idCliente', idCliente).set('idUsuario', 1); // Por ahora usamos el usuario 1 por defecto
-
-    return this.http.post<any>(`${this.apiUrl}/confirmar`, input, { params });
+  confirmar(
+    input: MuebleConfirmacionInput,
+    idCliente: number,
+    idUsuario: number,
+  ): Observable<CotizacionConfirmada> {
+    const params = new HttpParams().set('idCliente', idCliente).set('idUsuario', idUsuario);
+    return this.http.post<CotizacionConfirmada>(`${this.apiUrl}/confirmar`, input, { params });
   }
 
   obtener(id: number): Observable<CotizacionDetalle> {
@@ -53,6 +57,7 @@ export class CotizacionService {
   cancelar(id: number, motivo: string): Observable<void> {
     return this.http.patch<void>(`${this.apiUrl}/${id}/cancelar`, { motivo });
   }
+
   aceptar(id: number): Observable<void> {
     return this.http.patch<void>(`${this.apiUrl}/${id}/aceptar`, {});
   }

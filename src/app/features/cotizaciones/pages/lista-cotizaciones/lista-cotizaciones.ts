@@ -4,6 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CotizacionService } from '../../services/cotizacion';
 import { ToastService } from '../../../../shared/services/toast.service';
+import {
+  claseEstado,
+  formatoEstado as formatoEstadoUtil,
+  iniciales,
+} from '../../../../shared/utils/estado.utils';
 import { CotizacionResumen } from '../../models/cotizacion.models';
 
 type EstadoFiltro = 'todos' | 'pendiente' | 'aprobado' | 'rechazada' | 'cancelada';
@@ -59,24 +64,28 @@ export class ListaCotizaciones implements OnInit {
   }
 
   // ============ KPIs ============
-  readonly totalCotizaciones = computed(() =>
-    this.cotizaciones().filter(c => c.estado?.toLowerCase() !== 'cancelada').length);
+  readonly totalCotizaciones = computed(
+    () => this.cotizaciones().filter((c) => c.estado?.toLowerCase() !== 'cancelada').length,
+  );
 
-  readonly totalAprobadas = computed(() =>
-    this.cotizaciones().filter(c => c.estado?.toLowerCase() === 'aprobado').length);
+  readonly totalAprobadas = computed(
+    () => this.cotizaciones().filter((c) => c.estado?.toLowerCase() === 'aprobado').length,
+  );
 
-  readonly totalPendientes = computed(() =>
-    this.cotizaciones().filter(c => c.estado?.toLowerCase() === 'pendiente').length);
+  readonly totalPendientes = computed(
+    () => this.cotizaciones().filter((c) => c.estado?.toLowerCase() === 'pendiente').length,
+  );
 
-  readonly totalRechazadas = computed(() =>
-    this.cotizaciones().filter(c => c.estado?.toLowerCase() === 'rechazada').length);
+  readonly totalRechazadas = computed(
+    () => this.cotizaciones().filter((c) => c.estado?.toLowerCase() === 'rechazada').length,
+  );
 
   // ============ Familias disponibles ============
   readonly familias = computed(() => {
     const set = new Set(
       this.cotizaciones()
-        .map(c => c.productoFamilia)
-        .filter((f): f is string => !!f)
+        .map((c) => c.productoFamilia)
+        .filter((f): f is string => !!f),
     );
     return Array.from(set).sort();
   });
@@ -104,20 +113,21 @@ export class ListaCotizaciones implements OnInit {
     const ff = this.familiaFiltro();
 
     if (ef !== 'todos') {
-      lista = lista.filter(c => {
+      lista = lista.filter((c) => {
         const estadoDb = (c.estado || '').toLowerCase().trim();
         return estadoDb === ef.toLowerCase();
       });
     }
     if (ff !== 'todas') {
-      lista = lista.filter(c => c.productoFamilia === ff);
+      lista = lista.filter((c) => c.productoFamilia === ff);
     }
     if (!q) return lista;
 
-    return lista.filter(c =>
-      c.numeroCotizacion?.toLowerCase().includes(q) ||
-      c.clienteNombre?.toLowerCase().includes(q) ||
-      c.productoFamilia?.toLowerCase().includes(q)
+    return lista.filter(
+      (c) =>
+        c.numeroCotizacion?.toLowerCase().includes(q) ||
+        c.clienteNombre?.toLowerCase().includes(q) ||
+        c.productoFamilia?.toLowerCase().includes(q),
     );
   });
 
@@ -180,29 +190,16 @@ export class ListaCotizaciones implements OnInit {
     }
   }
 
-  
-  iniciales(nombre: string | null | undefined): string {
-    if (!nombre) return '?';
-    const palabras = nombre.trim().split(/\s+/).slice(0, 2);
-    return palabras.map(p => p.charAt(0).toUpperCase()).join('');
-  }
-
-  estadoClass(estado: string): string {
-    switch (estado?.toLowerCase()) {
-      case 'pendiente': return 'badge-pendiente';
-      case 'aprobado':  return 'badge-aceptada';
-      case 'rechazada': return 'badge-rechazada';
-      case 'cancelada': return 'badge-cancelada';
-      default:          return 'badge-default';
-    }
-  }
+  readonly iniciales = iniciales;
+  readonly formatoEstado = formatoEstadoUtil;
+  readonly estadoClass = (estado: string): string => claseEstado(estado);
 
   // ============ Modal de Cancelación ============
   abrirModalCancelar(c: CotizacionResumen, event: Event): void {
     event.stopPropagation();
     event.preventDefault();
     this.cotizacionACancelar.set(c);
-    this.cancelMotivo.set(''); 
+    this.cancelMotivo.set('');
     this.showCancelModal.set(true);
   }
 
@@ -225,7 +222,7 @@ export class ListaCotizaciones implements OnInit {
       next: () => {
         this.toast.success('Cotización rechazada correctamente');
         this.cerrarModalCancelar();
-        this.cargar(); 
+        this.cargar();
       },
       error: (err) => {
         this.toast.error('Error al rechazar: ' + (err?.error?.message ?? err.message));

@@ -1,15 +1,18 @@
 <div class="reporte-page">
   <!-- HEADER CON FILTROS -->
-  <div class="page-header">
+  <div class="r-header">
     <div>
       <h1>Reportería comercial</h1>
-      <p>Análisis de cotizaciones, resultados y personalizaciones</p>
+      <p>
+        Análisis de cotizaciones, resultados y personalizaciones ·
+        <strong>{{ rangoTexto() }}</strong>
+      </p>
     </div>
-    <div class="filtros">
+    <div class="r-filtros">
       <select class="filter-select" [(ngModel)]="periodoSeleccionado" (change)="aplicarFiltros()">
         <option>Últimos 3 meses</option>
         <option>Últimos 6 meses</option>
-        <option>Este año</option>
+        <option>Último año</option>
       </select>
       <select class="filter-select" [(ngModel)]="estadoSeleccionado" (change)="aplicarFiltros()">
         <option>Todos los estados</option>
@@ -28,131 +31,238 @@
   </div>
 
   <!-- KPIS -->
-  <div class="kpis">
-    <!-- Total -->
-    <div class="kpi-card">
-      <div class="kpi-header">
-        <div class="kpi-icon rojo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M8 13h8M8 17h8"></path></svg>
-        </div>
-        <span class="kpi-title">Total de cotizaciones</span>
-      </div>
-      <div class="kpi-body">
-        <strong class="kpi-value">{{ stats()?.totalCotizaciones | number }}</strong>
-      </div>
-      <div class="kpi-sparkline">
-        <svg viewBox="0 0 100 20" preserveAspectRatio="none">
-          <polyline
-            points="0,15 20,12 40,14 60,9 80,7 100,5"
+  <section class="r-kpis" aria-label="Indicadores">
+    <article class="kpi-card r-kpi">
+      <div class="r-kpi-main">
+        <span class="kpi-icon rojo">
+          <svg
+            viewBox="0 0 24 24"
             fill="none"
-            stroke="#c8102e"
+            stroke="currentColor"
             stroke-width="2"
-          />
-        </svg>
-      </div>
-    </div>
-
-    <!-- Ganadas -->
-    <div class="kpi-card">
-      <div class="kpi-header">
-        <div class="kpi-icon verde">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0z"></path></svg>
-        </div>
-        <span class="kpi-title">Cotizaciones ganadas</span>
-      </div>
-      <div class="kpi-body">
-        <strong class="kpi-value">{{ stats()?.totalAprobadas | number }}</strong>
-      </div>
-      <div class="kpi-sparkline">
-        <svg viewBox="0 0 100 20" preserveAspectRatio="none">
-          <polyline
-            points="0,16 20,14 40,11 60,10 80,7 100,5"
-            fill="none"
-            stroke="#1a7f4f"
-            stroke-width="2"
-          />
-        </svg>
-      </div>
-    </div>
-
-    <!-- Rechazadas -->
-    <div class="kpi-card">
-      <div class="kpi-header">
-        <div class="kpi-icon rojo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10" />
-            <path d="m15 9-6 6M9 9l6 6" />
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <path d="M14 2v6h6M8 13h8M8 17h8"></path>
           </svg>
+        </span>
+        <div class="r-kpi-txt">
+          <span class="r-kpi-label">Total de cotizaciones</span>
+          <div class="r-kpi-row">
+            <strong class="kpi-value">{{ stats()?.totalCotizaciones | number }}</strong>
+            <span class="r-delta" [ngClass]="deltaClass('total')"
+              >{{ delta('total') }}<small>vs. periodo anterior</small></span
+            >
+          </div>
         </div>
-        <span class="kpi-title">Cotizaciones rechazadas</span>
       </div>
-      <div class="kpi-body">
-        <strong class="kpi-value">{{ stats()?.totalRechazadas | number }}</strong>
-      </div>
-      <div class="kpi-sparkline">
-        <svg viewBox="0 0 100 20" preserveAspectRatio="none">
-          <polyline
-            points="0,18 20,16 40,13 60,10 80,6 100,4"
-            fill="none"
-            stroke="#c8102e"
-            stroke-width="2"
-          />
-        </svg>
-      </div>
-    </div>
+      <svg class="kpi-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
+        <path
+          d="M0 24 C12 20 22 25 36 19 S58 20 76 15 S92 18 100 8"
+          fill="none"
+          stroke="#c8102e"
+          stroke-width="2"
+          stroke-linecap="round"
+          vector-effect="non-scaling-stroke"
+        ></path>
+      </svg>
+    </article>
 
-    <!-- Tasa Conversión -->
-    <div class="kpi-card">
-      <div class="kpi-header">
-        <div class="kpi-icon naranja">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="8" cy="8" r="6" />
-            <path d="M18.09 10.37A6 6 0 1 1 10.34 18M7 6h1v4" />
+    <article class="kpi-card r-kpi">
+      <div class="r-kpi-main">
+        <span class="kpi-icon verde">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0z"
+            ></path>
           </svg>
+        </span>
+        <div class="r-kpi-txt">
+          <span class="r-kpi-label">Cotizaciones ganadas</span>
+          <div class="r-kpi-row">
+            <strong class="kpi-value">{{ stats()?.totalAprobadas | number }}</strong>
+            <span class="r-delta" [ngClass]="deltaClass('aprobadas')"
+              >{{ delta('aprobadas') }}<small>vs. periodo anterior</small></span
+            >
+          </div>
         </div>
-        <span class="kpi-title">Tasa de conversión</span>
       </div>
-      <div class="kpi-body">
-        <strong class="kpi-value">{{ stats()?.tasaConversion | number: '1.1-1' }}%</strong>
+      <svg class="kpi-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
+        <path
+          d="M0 24 C14 18 26 20 40 17 S64 19 80 14 S94 12 100 8"
+          fill="none"
+          stroke="#1f9d63"
+          stroke-width="2"
+          stroke-linecap="round"
+          vector-effect="non-scaling-stroke"
+        ></path>
+      </svg>
+    </article>
+
+    <article class="kpi-card r-kpi">
+      <div class="r-kpi-main">
+        <span class="kpi-icon rojo">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="m15 9-6 6M9 9l6 6"></path>
+          </svg>
+        </span>
+        <div class="r-kpi-txt">
+          <span class="r-kpi-label">Cotizaciones rechazadas</span>
+          <div class="r-kpi-row">
+            <strong class="kpi-value">{{ stats()?.totalRechazadas | number }}</strong>
+            <span class="r-delta" [ngClass]="deltaClass('rechazadas')"
+              >{{ delta('rechazadas') }}<small>vs. periodo anterior</small></span
+            >
+          </div>
+        </div>
       </div>
-      <div class="kpi-mini-donut">
-        <svg viewBox="0 0 36 36">
-          <path
-            class="circle-bg"
-            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-          />
-          <path
-            class="circle"
-            [attr.stroke-dasharray]="(stats()?.tasaConversion || 0) + ', 100'"
-            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-          />
-        </svg>
+      <svg class="kpi-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
+        <path
+          d="M0 22 C14 17 24 21 38 16 S60 19 78 14 S92 16 100 10"
+          fill="none"
+          stroke="#c8102e"
+          stroke-width="2"
+          stroke-linecap="round"
+          vector-effect="non-scaling-stroke"
+        ></path>
+      </svg>
+    </article>
+
+    <article class="kpi-card r-kpi r-kpi-conv">
+      <div class="r-kpi-main">
+        <span class="kpi-icon naranja">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="8" cy="8" r="6"></circle>
+            <path d="M18.09 10.37A6 6 0 1 1 10.34 18M7 6h1v4"></path>
+          </svg>
+        </span>
+        <div class="r-kpi-txt">
+          <span class="r-kpi-label">Tasa de conversión</span>
+          <div class="r-kpi-row">
+            <strong class="kpi-value">{{ stats()?.tasaConversion | number: '1.1-1' }}%</strong>
+            <span class="r-delta" [ngClass]="deltaClass('conversion')"
+              >{{ delta('conversion') }}<small>vs. periodo anterior</small></span
+            >
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
+      <svg class="r-mini-donut" viewBox="0 0 42 42" role="img" aria-label="Tasa de conversión">
+        <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#e5e6ea" stroke-width="5"></circle>
+        <circle
+          class="circle"
+          cx="21"
+          cy="21"
+          r="15.9155"
+          fill="none"
+          stroke="#c8102e"
+          stroke-width="5"
+          stroke-linecap="round"
+          pathLength="100"
+          [attr.stroke-dasharray]="
+            (stats()?.tasaConversion || 0) + ', ' + (100 - (stats()?.tasaConversion || 0))
+          "
+          transform="rotate(-90 21 21)"
+        ></circle>
+      </svg>
+    </article>
+  </section>
 
   <!-- GRÁFICOS -->
-  <div class="charts-row">
-    <!-- Barras -->
-    <div class="chart-card">
-      <div class="chart-header">
-        <h2>Cotizaciones ganadas vs. rechazadas por mes</h2>
-        <div class="custom-legend">
+  <section class="r-fila r-fila-1">
+    <article class="chart-card r-chart">
+      <header class="r-card-head">
+        <h2>
+          <span class="r-hico">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M3 3v18h18"></path>
+              <path d="M8 17v-5M13 17V8M18 17v-9"></path>
+            </svg>
+          </span>
+          Cotizaciones ganadas vs. rechazadas por mes
+        </h2>
+        <div class="custom-legend r-leg">
           <span><i class="dot rojo"></i> Ganadas</span>
           <span><i class="dot rosa"></i> Rechazadas</span>
         </div>
+      </header>
+      <div class="r-plotwrap">
+        <span class="r-ytitle">Nº de cotizaciones</span>
+        <div class="r-plotcol">
+          <div class="chart-wrapper">
+            <canvas
+              baseChart
+              [data]="barChartData()"
+              [options]="barChartOptions"
+              type="bar"
+            ></canvas>
+          </div>
+        </div>
       </div>
-      <div class="chart-wrapper">
-        <canvas baseChart [data]="barChartData()" [options]="barChartOptions" type="bar"></canvas>
-      </div>
-    </div>
+    </article>
 
-    <!-- Dona -->
-    <div class="chart-card">
-      <div class="chart-header">
-        <h2>Motivos de rechazo de cotizaciones</h2>
-      </div>
-      <div class="donut-layout">
+    <article class="chart-card">
+      <header class="r-card-head">
+        <h2>
+          <span class="r-hico">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M3 3v18h18"></path>
+              <path d="M8 17v-5M13 17V8M18 17v-9"></path>
+            </svg>
+          </span>
+          Motivos de rechazo de cotizaciones
+        </h2>
+        <a routerLink="/cotizaciones" class="r-btn-link">
+          Ver detalle
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M5 12h14M13 6l6 6-6 6"></path>
+          </svg>
+        </a>
+      </header>
+      <div class="donut-layout r-motivos">
         <div class="donut-wrapper">
           <canvas
             baseChart
@@ -166,9 +276,9 @@
           </div>
         </div>
         <ul class="motivos-list">
-          @for (m of stats()?.motivosRechazo; track m.motivo) {
+          @for (m of stats()?.motivosRechazo; track m.motivo; let i = $index) {
             <li>
-              <i class="dot rojo"></i>
+              <i class="dot" [style.background]="colorMotivo(i)"></i>
               <span>{{ m.motivo }}</span>
               <small>{{ m.porcentaje | number: '1.0-1' }}%</small>
               <strong>{{ m.cantidad }}</strong>
@@ -176,22 +286,34 @@
           }
         </ul>
       </div>
-    </div>
-  </div>
+    </article>
+  </section>
 
-  <!-- TABLAS -->
-  <div class="tables-row">
-    <!-- Productos -->
-    <div class="table-card">
-      <div class="table-header">
-        
-        <h2><span class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 16-9 5-9-5V8l9-5 9 5z"></path><path d="m3 8 9 5 9-5M12 21V13"></path></svg></span> Productos más personalizados</h2>
-      </div>
+  <!-- RANKINGS -->
+  <section class="r-fila r-fila-2">
+    <article class="table-card">
+      <header class="r-card-head">
+        <h2>
+          <span class="r-hico">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="m21 16-9 5-9-5V8l9-5 9 5z"></path>
+              <path d="m3 8 9 5 9-5M12 21V13"></path>
+            </svg>
+          </span>
+          Productos más personalizados
+        </h2>
+      </header>
       <div class="table-header-cols">
         <span>Producto / Familia</span>
-        <span class="text-right">N° de cotizaciones</span>
+        <span class="text-right">Nº de cotizaciones</span>
         <span></span>
-        <!-- Columna vacía para la barra -->
         <span class="text-right">% del total</span>
       </div>
       <div class="table-body">
@@ -199,23 +321,39 @@
           <div class="table-row">
             <span class="col-nombre">{{ item.nombre }}</span>
             <span class="col-cantidad text-right">{{ item.cantidad }}</span>
-            <div class="col-barra">
-              <div class="barra" [style.width.%]="item.porcentaje"></div>
-            </div>
+            <span class="col-barra"
+              ><span class="barra" [style.width.%]="item.porcentaje"></span
+            ></span>
             <span class="col-porcentaje text-right">{{ item.porcentaje | number: '1.0-0' }}%</span>
           </div>
         }
       </div>
-    </div>
+    </article>
 
-    <!-- Características -->
-    <div class="table-card">
-      <div class="table-header">
-        <h2><span class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span> Características más solicitadas</h2>
-      </div>
+    <article class="table-card">
+      <header class="r-card-head">
+        <h2>
+          <span class="r-hico">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="3"></circle>
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+              ></path>
+            </svg>
+          </span>
+          Características de personalización más solicitadas
+        </h2>
+      </header>
       <div class="table-header-cols">
         <span>Característica</span>
-        <span class="text-right">N° de cotizaciones</span>
+        <span class="text-right">Nº de cotizaciones</span>
         <span></span>
         <span class="text-right">% del total</span>
       </div>
@@ -224,53 +362,97 @@
           <div class="table-row">
             <span class="col-nombre">{{ item.nombre }}</span>
             <span class="col-cantidad text-right">{{ item.cantidad }}</span>
-            <div class="col-barra">
-              <div class="barra" [style.width.%]="item.porcentaje"></div>
-            </div>
+            <span class="col-barra"
+              ><span class="barra" [style.width.%]="item.porcentaje"></span
+            ></span>
             <span class="col-porcentaje text-right">{{ item.porcentaje | number: '1.0-0' }}%</span>
           </div>
         }
       </div>
-    </div>
-  </div>
+    </article>
+  </section>
 
   <!-- ÚLTIMAS COTIZACIONES -->
-  <div class="last-cotizaciones-card">
-    <div class="table-header">
-      <h2><span class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M8 13h8M8 17h8"></path></svg></span> Últimas cotizaciones</h2>
-      <a routerLink="/cotizaciones" class="btn-ver-todas">Ver todas →</a>
-    </div>
-    <table class="tabla-cotizaciones">
-      <thead>
-        <tr>
-          <th>N° cotización</th>
-          <th>Fecha</th>
-          <th>Cliente</th>
-          <th>Producto / Familia</th>
-          <th>Monto</th>
-          <th>Estado</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (c of stats()?.ultimasCotizaciones; track c.numeroCotizacion) {
+  <section class="last-cotizaciones-card">
+    <header class="r-card-head">
+      <h2>
+        <span class="r-hico">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <path d="M14 2v6h6M8 13h8M8 17h8"></path>
+          </svg>
+        </span>
+        Últimas cotizaciones
+      </h2>
+      <a routerLink="/cotizaciones" class="r-btn-link">
+        Ver todas
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M5 12h14M13 6l6 6-6 6"></path>
+        </svg>
+      </a>
+    </header>
+    <div class="tabla-scroll r-tabla-scroll">
+      <table class="tabla-cotizaciones r-tabla">
+        <thead>
           <tr>
-            <td class="font-bold">{{ c.numeroCotizacion }}</td>
-            <td>{{ c.fechaCotizacion | date: 'dd/MM/yyyy' }}</td>
-            <td>{{ c.clienteNombre }}</td>
-            <td>{{ c.familia }}</td>
-            <td>{{ c.total | currency: 'CLP' : 'symbol-narrow' : '1.0-0' : 'es-CL' }}</td>
-            <td>
-              <span class="badge" [ngClass]="getBadgeClass(c.estado)">{{ c.estado }}</span>
-            </td>
-            <td>
-              <button class="btn-ver-ojo" [routerLink]="['/cotizaciones', c.idCotizacion]">
-                👁 Ver
-              </button>
-            </td>
+            <th>Nº cotización</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Producto / Familia</th>
+            <th>Monto</th>
+            <th>Estado</th>
+            <th>Motivo (si aplica)</th>
+            <th>Acciones</th>
           </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+        </thead>
+        <tbody>
+          @for (c of stats()?.ultimasCotizaciones; track c.numeroCotizacion) {
+            <tr>
+              <td class="font-bold">{{ c.numeroCotizacion }}</td>
+              <td>{{ c.fechaCotizacion | date: 'dd/MM/yyyy' }}</td>
+              <td>{{ c.clienteNombre }}</td>
+              <td>{{ c.familia }}</td>
+              <td>{{ c.total | currency: 'CLP' : 'symbol-narrow' : '1.0-0' : 'es-CL' }}</td>
+              <td>
+                <span class="badge" [ngClass]="getBadgeClass(c.estado)">{{
+                  formatoEstado(c.estado)
+                }}</span>
+              </td>
+              <td class="c-motivo">{{ c.motivo || '—' }}</td>
+              <td>
+                <button class="btn-ver-ojo" [routerLink]="['/cotizaciones', c.idCotizacion]">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                  Ver
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
 </div>

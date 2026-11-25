@@ -10,3 +10,9 @@ export interface Cliente {
   estado: boolean;
   fechaCreacion: string;
 }
+
+/** Datos enviados al crear/actualizar; el backend genera id y fecha. */
+export type ClientePayload = Pick<
+  Cliente,
+  'razonSocial' | 'rut' | 'telefono' | 'correo' | 'direccion' | 'ciudad' | 'comuna' | 'estado'
+>;

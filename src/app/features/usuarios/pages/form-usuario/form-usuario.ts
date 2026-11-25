@@ -4,6 +4,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { UsuarioService } from './../../../usuarios/services/usuario';
 import { ToastService } from '../../../../shared/services/toast.service';
+import { UsuarioPayload } from '../../models/usuario.model';
+import { mensajeError } from '../../../../shared/utils/error.utils';
 
 @Component({
   selector: 'app-form-usuario',
@@ -65,9 +67,9 @@ export class FormUsuario implements OnInit {
         });
         this.cargando.set(false);
       },
-      error: (err) => {
+      error: (err: unknown) => {
         this.cargando.set(false);
-        this.toast.error(err?.error?.message || err?.message || 'Error al cargar el usuario');
+        this.toast.error(mensajeError(err, 'Error al cargar el usuario'));
         this.router.navigate(['/usuarios']);
       },
     });
@@ -82,24 +84,32 @@ export class FormUsuario implements OnInit {
     }
 
     this.guardando.set(true);
-    const data = this.form.getRawValue() as any;
+    const raw = this.form.getRawValue();
+    const data: Partial<UsuarioPayload> = {
+      nombres: raw.nombres ?? '',
+      apellidos: raw.apellidos ?? '',
+      correo: raw.correo ?? '',
+      username: raw.username ?? '',
+      rol: (raw.rol as UsuarioPayload['rol']) ?? 'ASESOR',
+      estado: raw.estado ?? true,
+    };
 
     // En edición, si no se escribió una nueva contraseña, no se envía.
-    if (this.modoEdicion() && !data.password?.trim()) {
-      delete data.password;
+    if (raw.password?.trim()) {
+      data.password = raw.password;
     }
 
     const request$ = this.modoEdicion()
       ? this.usuarioService.actualizar(this.idUsuario()!, data)
-      : this.usuarioService.crear(data);
+      : this.usuarioService.crear(data as UsuarioPayload);
 
     request$.subscribe({
       next: () => {
         this.toast.success(this.modoEdicion() ? 'Usuario actualizado' : 'Usuario registrado');
         this.router.navigate(['/usuarios']);
       },
-      error: (err) => {
-        this.toast.error(err.error?.message || 'Error al guardar');
+      error: (err: unknown) => {
+        this.toast.error(mensajeError(err, 'Error al guardar'));
         this.guardando.set(false);
       },
     });

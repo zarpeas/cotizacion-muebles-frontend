@@ -129,99 +129,101 @@
     } @else if (usuariosFiltrados().length === 0) {
       <div class="placeholder">No se encontraron usuarios.</div>
     } @else {
-      <table class="tabla">
-        <thead>
-          <tr>
-            <th>Usuario</th>
-            <th>Rol</th>
-            <th>Estado</th>
-            <th>Fecha de creación</th>
-            <th>Último ingreso</th>
-            <th class="acciones-th">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (u of usuariosFiltrados(); track u.idUsuario) {
+      <div class="tabla-scroll">
+        <table class="tabla">
+          <thead>
             <tr>
-              <td>
-                <div class="usuario-cell">
-                  <div class="usuario-avatar">{{ iniciales(u.nombres, u.apellidos) }}</div>
-                  <div class="usuario-info">
-                    <span class="usuario-nombre">{{ u.nombres }} {{ u.apellidos }}</span>
-                    <small>@{{ u.username }} · {{ u.correo }}</small>
-                  </div>
-                </div>
-              </td>
-              <td>
-                @if (u.rol === 'ADMIN') {
-                  <span class="badge badge-rol-admin">Administrador</span>
-                } @else {
-                  <span class="badge badge-rol-asesor">Asesor</span>
-                }
-              </td>
-              <td>
-                @if (u.estado) {
-                  <span class="badge badge-activo">Activo</span>
-                } @else {
-                  <span class="badge badge-inactivo">Deshabilitado</span>
-                }
-              </td>
-              <td>{{ u.fechaCreacion | date: 'dd/MM/yyyy' }}</td>
-              <td>{{ u.fechaEntrada | date: 'dd/MM/yyyy HH:mm' }}</td>
-              <td class="acciones-td">
-                <a
-                  class="action-btn"
-                  [routerLink]="['/usuarios/editar', u.idUsuario]"
-                  title="Editar"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                  </svg>
-                </a>
-                <button
-                  class="action-btn"
-                  [class.danger]="u.estado"
-                  (click)="toggleEstado(u)"
-                  [title]="u.estado ? 'Deshabilitar' : 'Habilitar'"
-                >
-                  @if (u.estado) {
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path d="M18.36 6.64a9 9 0 1 1-12.73 0" />
-                      <line x1="12" y1="2" x2="12" y2="12" />
-                    </svg>
-                  } @else {
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                      <polyline points="22 4 12 14.01 9 11.01" />
-                    </svg>
-                  }
-                </button>
-              </td>
+              <th>Usuario</th>
+              <th>Rol</th>
+              <th>Estado</th>
+              <th>Fecha de creación</th>
+              <th>Último ingreso</th>
+              <th class="acciones-th">Acciones</th>
             </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (u of usuariosFiltrados(); track u.idUsuario) {
+              <tr [class.fila-inactiva]="!u.estado">
+                <td>
+                  <div class="usuario-cell">
+                    <div class="usuario-avatar">{{ iniciales(u.nombres, u.apellidos) }}</div>
+                    <div class="usuario-info">
+                      <span class="usuario-nombre">{{ u.nombres }} {{ u.apellidos }}</span>
+                      <small>@{{ u.username }} · {{ u.correo }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  @if (u.rol === 'ADMIN') {
+                    <span class="badge badge-rol-admin">Administrador</span>
+                  } @else {
+                    <span class="badge badge-rol-asesor">Asesor</span>
+                  }
+                </td>
+                <td>
+                  @if (u.estado) {
+                    <span class="badge badge-activo">Activo</span>
+                  } @else {
+                    <span class="badge badge-inactivo">Deshabilitado</span>
+                  }
+                </td>
+                <td>{{ u.fechaCreacion | date: 'dd/MM/yyyy' }}</td>
+                <td>{{ u.fechaEntrada | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td class="acciones-td">
+                  <a
+                    class="action-btn"
+                    [routerLink]="['/usuarios/editar', u.idUsuario]"
+                    title="Editar"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                    </svg>
+                  </a>
+                  <button
+                    class="action-btn"
+                    [class.danger]="u.estado"
+                    (click)="toggleEstado(u)"
+                    [title]="u.estado ? 'Deshabilitar' : 'Habilitar'"
+                  >
+                    @if (u.estado) {
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M18.36 6.64a9 9 0 1 1-12.73 0" />
+                        <line x1="12" y1="2" x2="12" y2="12" />
+                      </svg>
+                    } @else {
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                      </svg>
+                    }
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
 
       <!-- PIE DE TABLA -->
       <div class="table-foot">

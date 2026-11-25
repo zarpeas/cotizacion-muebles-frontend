@@ -4,7 +4,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ClienteService } from '../../services/cliente';
 import { ToastService } from '../../../../shared/services/toast.service';
-import { Cliente } from '../../models/cliente.model';
+import { Cliente, ClientePayload } from '../../models/cliente.model';
+import { mensajeError } from '../../../../shared/utils/error.utils';
 
 @Component({
   selector: 'app-form-cliente',
@@ -28,12 +29,12 @@ export class FormCliente implements OnInit {
 
   readonly form = this.fb.group({
     razonSocial: ['', [Validators.required, Validators.maxLength(200)]],
-    rut:         ['', [Validators.required, Validators.maxLength(30)]],
-    correo:      ['', [Validators.required, Validators.email]],
-    telefono:    ['', [Validators.maxLength(30)]],
-    direccion:   ['', [Validators.maxLength(250)]],
-    ciudad:      ['', [Validators.maxLength(100)]],
-    comuna:      ['', [Validators.maxLength(100)]],
+    rut: ['', [Validators.required, Validators.maxLength(30)]],
+    correo: ['', [Validators.required, Validators.email]],
+    telefono: ['', [Validators.maxLength(30)]],
+    direccion: ['', [Validators.maxLength(250)]],
+    ciudad: ['', [Validators.maxLength(100)]],
+    comuna: ['', [Validators.maxLength(100)]],
     estado: [true],
   });
 
@@ -58,12 +59,12 @@ export class FormCliente implements OnInit {
           direccion: c.direccion ?? '',
           ciudad: c.ciudad ?? '',
           comuna: c.comuna ?? '',
-          estado: c.estado,   
+          estado: c.estado,
         });
         this.cargando.set(false);
       },
-      error: (err) => {
-        this.errorMsg.set('Error al cargar cliente: ' + (err?.error?.message ?? err.message));
+      error: (err: unknown) => {
+        this.errorMsg.set('Error al cargar cliente: ' + mensajeError(err));
         this.cargando.set(false);
       },
     });
@@ -78,21 +79,29 @@ export class FormCliente implements OnInit {
     this.guardando.set(true);
     this.errorMsg.set(null);
 
-     const payload = this.form.getRawValue();
+    const raw = this.form.getRawValue();
+    const payload: ClientePayload = {
+      razonSocial: raw.razonSocial ?? '',
+      rut: raw.rut ?? '',
+      telefono: raw.telefono,
+      correo: raw.correo,
+      direccion: raw.direccion,
+      ciudad: raw.ciudad,
+      comuna: raw.comuna,
+      estado: raw.estado ?? true,
+    };
 
     const request$ = this.modoEdicion()
-    ? this.clienteService.actualizar(this.idCliente()!, payload as any)
-    : this.clienteService.crear({ ...payload, estado: true } as any);
+      ? this.clienteService.actualizar(this.idCliente()!, payload)
+      : this.clienteService.crear({ ...payload, estado: true });
 
     request$.subscribe({
       next: () => {
-        this.toast.success(
-          this.modoEdicion() ? 'Cliente actualizado' : 'Cliente registrado'
-        );
+        this.toast.success(this.modoEdicion() ? 'Cliente actualizado' : 'Cliente registrado');
         this.router.navigate(['/clientes']);
       },
-      error: (err) => {
-        this.errorMsg.set('Error al guardar: ' + (err?.error?.message ?? err.message));
+      error: (err: unknown) => {
+        this.errorMsg.set('Error al guardar: ' + mensajeError(err));
         this.guardando.set(false);
       },
     });
@@ -102,7 +111,7 @@ export class FormCliente implements OnInit {
     this.router.navigate(['/clientes']);
   }
 
-    isInvalid(campo: string): boolean {
+  isInvalid(campo: string): boolean {
     const control = this.form.get(campo);
     return !!(control && control.invalid && control.touched);
   }

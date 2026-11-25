@@ -6,6 +6,7 @@ import { UsuarioService } from '../../../usuarios/services/usuario';
 import { Usuario } from '../../models/usuario.model';
 import { ConfirmService } from '../../../../shared/services/confirm.service';
 import { ToastService } from '../../../../shared/services/toast.service';
+import { iniciales as inicialesNombre } from '../../../../shared/utils/estado.utils';
 
 @Component({
   selector: 'app-lista-usuarios',
@@ -97,7 +98,6 @@ export class ListaUsuarios implements OnInit {
     });
   }
 
-  iniciales(nombres: string, apellidos: string): string {
-    return (nombres.charAt(0) + apellidos.charAt(0)).toUpperCase();
-  }
+  readonly iniciales = (nombres: string, apellidos: string): string =>
+    inicialesNombre(`${nombres ?? ''} ${apellidos ?? ''}`);
 }
